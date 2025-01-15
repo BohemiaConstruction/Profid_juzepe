@@ -7,7 +7,9 @@
             <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='page_timesheets']/field[@name='timesheet_ids']/tree[1]/field[@name='name']" position="after">
                 <field name="unit_qty" optional="show"/>
             </xpath>
-
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='page_timesheets']/group[not(@name)][1]/group[@name='project_hours']/field[@name='effective_hours']" position="after">
+                <field name="total_unit_qty"/>
+            </xpath>
         </field>
     </record>
 </odoo>
