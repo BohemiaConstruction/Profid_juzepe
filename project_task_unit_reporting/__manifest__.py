@@ -5,7 +5,7 @@
     "category": "Project",
     "author": "Your Name",
     "license": "LGPL-3",
-    "depends": ["project", "hr_timesheet"],
+    "depends": ["project", "hr_timesheet", "sale"],
     "data": [
         "views/project_task_views.xml",
         "views/account_analytic_line_views.xml"
