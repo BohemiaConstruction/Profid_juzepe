@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_task_form_inherit_unit_qty" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.unit.qty</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='timesheet_ids']" position="after">
+                <field name="total_unit_qty" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
