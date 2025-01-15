@@ -16,9 +16,9 @@ class ProjectTask(models.Model):
 
     def write(self, vals):
         res = super(ProjectTask, self).write(vals)
-        for task in self:
-            if "total_unit_qty" in vals or "timesheet_ids" in vals:
-                if task.sale_line_id:
-                    # Update delivered quantity dynamically
-                    task.sale_line_id.qty_delivered = task.total_unit_qty
+        sale_line_ids = self.mapped("sale_line_id")
+        for sale_line in sale_line_ids:
+            related_tasks = self.search([("sale_line_id", "=", sale_line.id)])
+            total_delivered = sum(related_tasks.mapped("total_unit_qty"))
+            sale_line.qty_delivered = total_delivered
         return res
