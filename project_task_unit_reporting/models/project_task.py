@@ -15,7 +15,8 @@ class ProjectTask(models.Model):
             task.total_unit_qty = sum(task.timesheet_ids.mapped("unit_qty"))
 
     def action_close_task(self):
+        res = super(ProjectTask, self).action_close_task()
         for task in self:
             if task.sale_line_id:
                 task.sale_line_id.qty_delivered += task.total_unit_qty
-        return super(ProjectTask, self).action_close_task()
+        return res

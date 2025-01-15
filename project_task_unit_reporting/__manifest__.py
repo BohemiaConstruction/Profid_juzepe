@@ -8,8 +8,8 @@
     "depends": ["project", "hr_timesheet", "sale"],
     "data": [
         "views/project_task_views.xml",
-        "views/account_analytic_line_views.xml"
+        "views/account_analytic_line_views.xml",
     ],
     "installable": True,
-    "application": False
+    "application": False,
 }
