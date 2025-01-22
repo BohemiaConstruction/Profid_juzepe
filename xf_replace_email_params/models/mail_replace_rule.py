@@ -185,3 +185,17 @@ class MailReplaceRule(models.Model):
         if rule:
             return rule.email_from_computed, rule.reply_to_computed
         return None, None
+
+    domain_filter = fields.Char(
+        string="Domain Filter",
+        help="A domain filter to apply the rule only for specific teams or models (e.g., support_team=1)."
+    )
+    
+    @api.model
+    def apply_rule(self, record):
+        if self.domain_filter:
+            # Evaluate the domain filter
+            filter_domain = eval(self.domain_filter)
+            if record.support_team != filter_domain.get('support_team'):
+                return
+        super(MailReplaceRule, self).apply_rule(record)
