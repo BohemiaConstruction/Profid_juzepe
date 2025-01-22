@@ -1,5 +1,8 @@
 from odoo import models, api
+from odoo.exceptions import ValidationError
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class MailMessage(models.Model):
     _inherit = 'mail.message'
