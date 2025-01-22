@@ -75,7 +75,8 @@
                             </p>
                         </group>
                     </sheet>
-                </form>
+                                    <field name="domain_filter"/>
+</form>
             </field>
         </record>
 
