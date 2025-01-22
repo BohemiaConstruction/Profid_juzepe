@@ -20,11 +20,26 @@ class MailMessage(models.Model):
             user = self.get_author_user(author_partner_id)
             company = user and user.company_id
             internal_user = user and user.has_group('base.group_user')
-            email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(model, company, internal_user)
-            if email_from:
-                # Overwrite email_from if replacement exists
-                values.update({'email_from': email_from})
-            if reply_to is not None:
-                # Overwrite reply_to if replacement exists
-                values.update({'reply_to': reply_to})
+
+            # Fetch the rule(s) based on model, company, and internal user
+            rules = self.env['mail.replace.rule'].search([
+                ('model', '=', model),
+                ('company_id', '=', company.id),
+                ('only_for_internal_users', '=', internal_user)
+            ])
+
+            for rule in rules:
+                # Evaluate domain filter dynamically from the rule
+                if rule.domain_filter:
+                    try:
+                        filter_condition = eval(rule.domain_filter)
+                        if all(getattr(values, field) == value for field, value in filter_condition.items()):
+                            # Get replacement email if the filter matches
+                            email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
+                            if email_from:
+                                values.update({'email_from': email_from})
+                            if reply_to is not None:
+                                values.update({'reply_to': reply_to})
+                    except Exception as e:
+                        raise ValidationError(f"Invalid filter condition: {e}")
         return super(MailMessage, self).create(values_list)
