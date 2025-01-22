@@ -39,18 +39,32 @@ class MailMessage(models.Model):
                         if not isinstance(filter_condition, dict):
                             raise ValidationError("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
                         
-                        # Log the filter and values for debugging purposes
-                        _logger.info(f"Applying filter: {filter_condition} on values: {values}")
-                        
-                        # Compare the filter conditions directly with the values dictionary
-                        if all(values.get(field) == value for field, value in filter_condition.items()):
+                        # Iterate over each field in the domain filter and compare values
+                        for field, value in filter_condition.items():
+                            # Retrieve the value of the field from the related model
+                            if 'res_id' in values:
+                                related_record = self.env[model].browse(values.get('res_id'))
+                                field_value = getattr(related_record, field, None)
+
+                                # Log the retrieved value for debugging
+                                _logger.info(f"Checking {field} (value: {field_value}) against {value}")
+
+                                # Check if the field value matches the filter value
+                                if field_value != value:
+                                    _logger.info(f"Field {field} does not match filter. Skipping update.")
+                                    break
+                            else:
+                                _logger.warning(f"res_id not found in values: {values}")
+                                continue
+                        else:
+                            # If all conditions match, apply the email replacements
                             _logger.info(f"Filter matched, updating emails for: {values}")
-                            # Get replacement email if the filter matches
                             email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
                             if email_from:
                                 values.update({'email_from': email_from})
                             if reply_to is not None:
                                 values.update({'reply_to': reply_to})
+
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
                         raise ValidationError(f"Invalid filter condition: {e}")
