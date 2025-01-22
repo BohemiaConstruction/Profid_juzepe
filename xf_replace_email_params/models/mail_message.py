@@ -46,9 +46,13 @@ class MailMessage(models.Model):
                                 related_record = self.env[model].browse(values.get('res_id'))
                                 field_value = getattr(related_record, field, None)
 
+                                # If field is a relation (e.g., Many2one), retrieve the ID
+                                if isinstance(field_value, models.BaseModel):
+                                    field_value = field_value.id  # Get the ID of the related record
+                                
                                 # Log the retrieved value for debugging
                                 _logger.info(f"Checking {field} (value: {field_value}) against {value}")
-
+                                
                                 # Check if the field value matches the filter value
                                 if field_value != value:
                                     _logger.info(f"Field {field} does not match filter. Skipping update.")
