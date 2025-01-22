@@ -18,6 +18,12 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         for values in values_list:
+            # Check if the message type is 'email' (outgoing)
+            if values.get('message_type') != 'email':
+                # Skip if this is not an outgoing email
+                _logger.info(f"Skipping non-email message with message_type: {values.get('message_type')}")
+                continue
+
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
             user = self.get_author_user(author_partner_id)
@@ -32,8 +38,9 @@ class MailMessage(models.Model):
             ])
 
             for rule in rules:
-                # Evaluate domain filter dynamically from the rule
+                # Check if the domain filter is set
                 if rule.domain_filter:
+                    # If domain filter is set, evaluate the conditions
                     try:
                         filter_condition = eval(rule.domain_filter)
                         if not isinstance(filter_condition, dict):
@@ -49,7 +56,7 @@ class MailMessage(models.Model):
                                 # If field is a relation (e.g., Many2one), retrieve the ID
                                 if isinstance(field_value, models.BaseModel):
                                     field_value = field_value.id  # Get the ID of the related record
-                                
+
                                 # Log the retrieved value for debugging
                                 _logger.info(f"Checking {field} (value: {field_value}) against {value}")
                                 
@@ -72,4 +79,13 @@ class MailMessage(models.Model):
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
                         raise ValidationError(f"Invalid filter condition: {e}")
+                else:
+                    # If domain filter is not set, update the emails without filtering
+                    _logger.info(f"No domain filter set. Updating emails for: {values}")
+                    email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
+                    if email_from:
+                        values.update({'email_from': email_from})
+                    if reply_to is not None:
+                        values.update({'reply_to': reply_to})
+
         return super(MailMessage, self).create(values_list)
