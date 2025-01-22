@@ -36,8 +36,12 @@ class MailMessage(models.Model):
                         if not isinstance(filter_condition, dict):
                             raise ValidationError("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
                         
+                        # Log the filter and values for debugging purposes
+                        _logger.info(f"Applying filter: {filter_condition} on values: {values}")
+                        
                         # Compare the filter conditions directly with the values dictionary
                         if all(values.get(field) == value for field, value in filter_condition.items()):
+                            _logger.info(f"Filter matched, updating emails for: {values}")
                             # Get replacement email if the filter matches
                             email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
                             if email_from:
@@ -45,5 +49,6 @@ class MailMessage(models.Model):
                             if reply_to is not None:
                                 values.update({'reply_to': reply_to})
                     except Exception as e:
+                        _logger.error(f"Error applying filter: {e}")
                         raise ValidationError(f"Invalid filter condition: {e}")
         return super(MailMessage, self).create(values_list)
