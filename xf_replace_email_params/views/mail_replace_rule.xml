@@ -1,8 +1,10 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data> <!--  noupdate="1" -->
+    <data>
+        <!-- Tree View -->
         <record id="mail_replace_rule_tree" model="ir.ui.view">
-            <field name="name">mail_replace_rule_tree</field>
+            <field name="name">mail.replace.rule.tree</field>
             <field name="model">mail.replace.rule</field>
             <field name="arch" type="xml">
                 <tree>
@@ -10,85 +12,49 @@
                     <field name="name"/>
                     <field name="model_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
-                    <field name="email_from_author"/>
                     <field name="email_from"/>
-                    <field name="email_from_user_id"/>
-                    <field name="reply_to_author"/>
                     <field name="reply_to"/>
-                    <field name="reply_to_user_id"/>
+                    <field name="domain_filter"/>
+                    <field name="only_for_internal_users"/>
                 </tree>
             </field>
         </record>
 
+        <!-- Form View -->
         <record id="mail_replace_rule_form" model="ir.ui.view">
-            <field name="name">mail_replace_rule_form</field>
+            <field name="name">mail.replace.rule.form</field>
             <field name="model">mail.replace.rule</field>
             <field name="arch" type="xml">
-                <form>
+                <form string="Mail Replace Rule">
                     <sheet>
                         <group>
+                            <field name="sequence"/>
                             <field name="name"/>
-                        </group>
-                        <group>
-                            <group>
-                                <field name="model_id"/>
-                            </group>
-                            <group>
-                                <field name="company_id" groups="base.group_multi_company"/>
-                            </group>
-                        </group>
-                        <group>
+                            <field name="model_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="domain_filter"/>
                             <field name="only_for_internal_users"/>
-                            <div class="alert alert-warning" role="alert"
-                                 invisible="only_for_internal_users" colspan="2">
-                                Please note that disabling this checkbox may lead to unexpected security consequences,
-                                because emails from non-internal users will be sent using trusted outgoing mail server.
-                            </div>
                         </group>
                         <group>
-                            <group name="email_from" string="Email From">
-                                <field name="email_from_author"/>
-                                <field name="email_from"
-                                       invisible="email_from_author"/>
-                                <field name="email_from_user_id"
-                                       invisible="email_from_author"/>
-                            </group>
-                            <group name="reply_to" string="Reply To">
-                                <field name="reply_to_author"/>
-                                <field name="reply_to"
-                                       invisible="reply_to_author"/>
-                                <field name="reply_to_user_id"
-                                       invisible="reply_to_author"/>
-                            </group>
-                        </group>
-                        <group name="help" string="Help">
-                            <p colspan="2">
-                                Please note that
-                                "Email From" and "Reply To"
-                                have higher priority than
-                                "Email From User" and "Reply To User".
-                            </p>
-                            <p colspan="2">
-                                Please ensure that outgoing
-                                mail server has access to send emails
-                                using sender address you set in the "Email From"
-                            </p>
+                            <field name="email_from"/>
+                            <field name="reply_to"/>
                         </group>
                     </sheet>
                 </form>
             </field>
         </record>
 
-        <record id="mail_replace_rule_act_window" model="ir.actions.act_window">
+        <!-- Action -->
+        <record id="mail_replace_rule_action" model="ir.actions.act_window">
             <field name="name">Mail Replace Rules</field>
             <field name="res_model">mail.replace.rule</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="mail_replace_rule_menuitem"
-                  name="Mail Replace Rules"
-                  action="mail_replace_rule_act_window"
-                  parent="base.menu_email"
-                  sequence="100"/>
+        <!-- Menu Item -->
+        <menuitem id="menu_mail_replace_rule" 
+                  name="Mail Replace Rules" 
+                  parent="mail.menu_mail_configuration" 
+                  action="mail_replace_rule_action"/>
     </data>
 </odoo>
