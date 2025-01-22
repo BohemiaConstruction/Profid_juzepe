@@ -33,7 +33,11 @@ class MailMessage(models.Model):
                 if rule.domain_filter:
                     try:
                         filter_condition = eval(rule.domain_filter)
-                        if all(getattr(values, field) == value for field, value in filter_condition.items()):
+                        if not isinstance(filter_condition, dict):
+                            raise ValidationError("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
+                        
+                        # Compare the filter conditions directly with the values dictionary
+                        if all(values.get(field) == value for field, value in filter_condition.items()):
                             # Get replacement email if the filter matches
                             email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
                             if email_from:
