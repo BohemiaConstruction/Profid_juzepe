@@ -8,12 +8,9 @@
             <field name="target">new</field>
         </record>
 
-        <!-- Menu Item under Emails -->
-        <menuitem id="email_attachment_filter_systee_settings_menu"
-                  name="Email Attachment Filter Systee"
-                  parent="base.menu_email" 
-                  action="email_attachment_filter_systee_settings_action"
-                  sequence="30"/>
+        <!-- Menu Item under Technical/Email -->
+        <menuitem id="email_attachment_filter_systee_settings_menu" name="Email Attachment Filter Systee"
+                  parent="mail.mail_menu_technical" action="email_attachment_filter_systee_settings_action"/>
 
         <!-- Settings Form View -->
         <record id="view_email_attachment_filter_systee_form" model="ir.ui.view">
@@ -30,4 +27,3 @@
         </record>
     </data>
 </odoo>
-
