@@ -5,6 +5,7 @@
             <field name="name">Email Attachment Filter Systee Settings</field>
             <field name="res_model">email.attachment.filter.settings</field>
             <field name="view_mode">form</field>
+            <field name="view_id" ref="view_email_attachment_filter_systee_form"/> <!-- Specify the form view -->
             <field name="target">new</field>
         </record>
 
