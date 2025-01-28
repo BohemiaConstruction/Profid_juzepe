@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 class EmailAttachmentFilterSettings(models.Model):
     _name = 'email.attachment.filter.settings'
