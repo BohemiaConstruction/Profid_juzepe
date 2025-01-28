@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="email_attachment_filter_systee_settings_action" model="ir.actions.act_window">
+            <field name="name">Email Attachment Filter Systee Settings</field>
+            <field name="res_model">email.attachment.filter.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="email_attachment_filter_systee_settings_menu" name="Email Attachment Filter Systee" 
+                  parent="mail.mail_menu_root" action="email_attachment_filter_systee_settings_action"/>
+
+        <record id="view_email_attachment_filter_systee_form" model="ir.ui.view">
+            <field name="name">email.attachment.filter.systee.form</field>
+            <field name="model">email.attachment.filter.settings</field>
+            <field name="arch" type="xml">
+                <form string="Email Attachment Filter Systee Settings">
+                    <group>
+                        <field name="is_active"/>
+                        <field name="min_attachment_size"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
