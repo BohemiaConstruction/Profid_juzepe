@@ -1,33 +1,37 @@
 <odoo>
     <data>
-        <!-- Settings Menu -->
-        <record id="email_attachment_filter_systee_settings_action" model="ir.actions.act_window">
-            <field name="name">Email Attachment Filter Systee Settings</field>
-            <field name="res_model">email.attachment.filter.settings</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_email_attachment_filter_systee_form"/> <!-- Specify the form view -->
-            <field name="target">new</field>
-        </record>
-
-        <!-- Menu Item under Email (base.menu_email) -->
-        <menuitem id="email_attachment_filter_systee_settings_menu" 
-                  name="Email Attachment Filter Systee"
-                  parent="base.menu_email" 
-                  action="email_attachment_filter_systee_settings_action" 
-                  sequence="12"/>
-
-        <!-- Settings Form View -->
-        <record id="view_email_attachment_filter_systee_form" model="ir.ui.view">
-            <field name="name">email.attachment.filter.systee.form</field>
-            <field name="model">email.attachment.filter.settings</field>
+        <!-- Add fields to General Settings -->
+        <record id="email_attachment_filter_systee_config_settings" model="ir.ui.view">
+            <field name="name">email.attachment.filter.systee.config.settings.form</field>
+            <field name="model">res.config.settings</field>
             <field name="arch" type="xml">
-                <form string="Email Attachment Filter Systee Settings">
+                <form string="General Settings">
                     <group>
-                        <field name="is_active"/>
-                        <field name="min_attachment_size"/>
+                        <!-- Add new fields under the settings form -->
+                        <group string="Email Attachment Filter Settings">
+                            <field name="is_active"/>
+                            <field name="min_attachment_size"/>
+                        </group>
                     </group>
                 </form>
             </field>
         </record>
+
+        <!-- Modify the config settings model to add the fields -->
+        <record id="email_attachment_filter_systee_config_settings_model" model="ir.model.fields">
+            <field name="model">res.config.settings</field>
+            <field name="name">is_active</field>
+            <field name="field_description">Enable Attachment Filtering</field>
+            <field name="ttype">boolean</field>
+        </record>
+
+        <record id="email_attachment_filter_systee_config_settings_model_2" model="ir.model.fields">
+            <field name="model">res.config.settings</field>
+            <field name="name">min_attachment_size</field>
+            <field name="field_description">Minimum Attachment Size (KB)</field>
+            <field name="ttype">integer</field>
+            <field name="default">100</field>
+        </record>
+
     </data>
 </odoo>
