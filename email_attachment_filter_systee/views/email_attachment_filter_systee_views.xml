@@ -1,5 +1,6 @@
 <odoo>
     <data>
+        <!-- Settings Menu -->
         <record id="email_attachment_filter_systee_settings_action" model="ir.actions.act_window">
             <field name="name">Email Attachment Filter Systee Settings</field>
             <field name="res_model">email.attachment.filter.settings</field>
@@ -7,9 +8,14 @@
             <field name="target">new</field>
         </record>
 
-        <menuitem id="email_attachment_filter_systee_settings_menu" name="Email Attachment Filter Systee" 
-                  parent="mail.mail_menu_root" action="email_attachment_filter_systee_settings_action"/>
+        <!-- Menu Item under Emails -->
+        <menuitem id="email_attachment_filter_systee_settings_menu"
+                  name="Email Attachment Filter Systee"
+                  parent="base.menu_email" 
+                  action="email_attachment_filter_systee_settings_action"
+                  sequence="30"/>
 
+        <!-- Settings Form View -->
         <record id="view_email_attachment_filter_systee_form" model="ir.ui.view">
             <field name="name">email.attachment.filter.systee.form</field>
             <field name="model">email.attachment.filter.settings</field>
@@ -24,3 +30,4 @@
         </record>
     </data>
 </odoo>
+
