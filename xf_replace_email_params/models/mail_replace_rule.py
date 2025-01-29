@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 
-class MailReplaceRule(models.Model)
+class MailReplaceRule(models.Model):
     domain_filter = fields.Char(
         string="Domain Filter",
         help="Filter criteria for applying the rule, e.g., {'support_team': 1}, {'user_id': 5}."
