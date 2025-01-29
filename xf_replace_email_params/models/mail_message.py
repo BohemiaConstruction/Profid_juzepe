@@ -67,10 +67,11 @@ class MailReplaceRule(models.Model):
         ('user_notification', 'User Notification'),
     ]
 
+    # Correct the default value and allowed values for message_type_filter
     message_type_filter = fields.Selection(
         MESSAGE_TYPE_SELECTION,
         string="Message Type Filter",
-        default='all',
+        default='email',  # default can be changed to a valid value, e.g. 'email'
         help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
     )
 
