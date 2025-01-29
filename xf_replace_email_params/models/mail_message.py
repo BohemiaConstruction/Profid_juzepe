@@ -4,10 +4,16 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class MailReplaceRule(models.Model):
-    _name = 'mail.replace.rule'
-    _description = 'Mail Replace Rule'
-    _order = 'sequence'
+class MailMessage(models.Model):
+    _inherit = 'mail.message'
+
+    def get_author_user(self, author_partner_id):
+        if not author_partner_id:
+            return
+        partner = self.env['res.partner'].with_context(active_test=False).browse(author_partner_id)
+        if partner and partner.user_ids:
+            for user in partner.user_ids:
+                return user
 
     # Common Values
     sequence = fields.Integer(
