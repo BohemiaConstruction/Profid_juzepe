@@ -21,7 +21,6 @@ class MailReplaceRule(models.Model):
         default='email',
         help="Select which message type the rule applies to."
     )
-:
     _name = 'mail.replace.rule'
     _description = 'Mail Replace Rule'
     _order = 'sequence'
