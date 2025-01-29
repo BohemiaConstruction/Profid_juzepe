@@ -11,6 +11,21 @@ class MailReplaceRule(models.Model):
         string='Sequence',
         default=10,
     )
+    # Zde je definice pole message_type_filter
+    message_type_filter = fields.Selection(
+        [
+            ('email', 'Incoming Email'),
+            ('comment', 'User Comment'),
+            ('email_outgoing', 'Outgoing Email'),
+            ('notification', 'System Notification'),
+            ('auto_comment', 'Automated Comment'),
+            ('user_notification', 'User Notification'),
+            ('all', 'All Types')
+        ],
+        string="Message Type Filter",
+        default='all',
+        help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
+    )
     name = fields.Char(
         string='Rule Name',
         required=True,
