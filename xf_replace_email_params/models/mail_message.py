@@ -63,24 +63,6 @@ class MailMessage(models.Model):
         help='Email address to be used in the REPLY field.',
     )
 
-    # Selection for message types
-    MESSAGE_TYPE_SELECTION = [
-        ('email', 'Incoming Email'),
-        ('comment', 'User Comment'),
-        ('email_outgoing', 'Outgoing Email'),
-        ('notification', 'System Notification'),
-        ('auto_comment', 'Automated Comment'),
-        ('user_notification', 'User Notification'),
-    ]
-
-    # Correct the default value and allowed values for message_type_filter
-    message_type_filter = fields.Selection(
-        MESSAGE_TYPE_SELECTION,
-        string="Message Type Filter",
-        default='email',  # default can be changed to a valid value, e.g. 'email'
-        help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
-    )
-
     @api.model_create_multi
     def create(self, values_list):
         for values in values_list:
