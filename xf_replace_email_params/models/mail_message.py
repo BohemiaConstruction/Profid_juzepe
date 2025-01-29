@@ -1,46 +1,101 @@
-from odoo import models, api
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 import logging
 
 _logger = logging.getLogger(__name__)
 
-class MailMessage(models.Model):
-    _inherit = 'mail.message'
+class MailReplaceRule(models.Model):
+    _name = 'mail.replace.rule'
+    _description = 'Mail Replace Rule'
+    _order = 'sequence'
 
-    def get_author_user(self, author_partner_id):
-        if not author_partner_id:
-            return
-        partner = self.env['res.partner'].with_context(active_test=False).browse(author_partner_id)
-        if partner and partner.user_ids:
-            for user in partner.user_ids:
-                return user
+    # Common Values
+    sequence = fields.Integer(
+        string='Sequence',
+        default=10,
+    )
+    name = fields.Char(
+        string='Rule Name',
+        required=True,
+    )
+    model_id = fields.Many2one(
+        string='Model',
+        comodel_name='ir.model',
+        ondelete='cascade',
+    )
+    model = fields.Char(
+        string='Model Name',
+        related='model_id.model',
+        store=True,
+        readonly=True,
+    )
+    company_id = fields.Many2one(
+        string='Company',
+        comodel_name='res.company',
+        default=lambda self: self.env.company,
+        ondelete='cascade',
+        index=True,
+    )
+    only_for_internal_users = fields.Boolean(
+        string='Only for Internal Users',
+        default=True,
+        help="If enabled, the rule only applies to internal users."
+    )
+    
+    # New domain filter for model-based email replacements
+    domain_filter = fields.Char(
+        string="Domain Filter",
+        help="Filter criteria for applying the rule, e.g., {'support_team': 1}, {'user_id': 5}."
+    )
+    
+    from_email = fields.Char(
+        string='FROM Email Address',
+        help='Email address to be used in the FROM field.',
+    )
+    reply_email = fields.Char(
+        string='REPLY Email Address',
+        help='Email address to be used in the REPLY field.',
+    )
+
+    # Selection for message types
+    MESSAGE_TYPE_SELECTION = [
+        ('email', 'Incoming Email'),
+        ('comment', 'User Comment'),
+        ('email_outgoing', 'Outgoing Email'),
+        ('notification', 'System Notification'),
+        ('auto_comment', 'Automated Comment'),
+        ('user_notification', 'User Notification'),
+    ]
+
+    message_type_filter = fields.Selection(
+        MESSAGE_TYPE_SELECTION,
+        string="Message Type Filter",
+        default='all',
+        help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
+    )
 
     @api.model_create_multi
     def create(self, values_list):
         for values in values_list:
-            # Check if the message type is 'email' (outgoing)
-            if values.get('message_type') != 'email':
-                # Skip if this is not an outgoing email
-                _logger.info(f"Skipping non-email message with message_type: {values.get('message_type')}")
-                continue
+            # Get the message_type of the current message
+            message_type = values.get('message_type', '')
 
-            author_partner_id = values.get('author_id', False)
-            model = values.get('model', False)
-            user = self.get_author_user(author_partner_id)
-            company = user and user.company_id
-            internal_user = user and user.has_group('base.group_user')
+            # Fetch the rule(s) based on model, company, internal user, and message_type
+            domain = [
+                ('model', '=', values.get('model')),
+                ('company_id', '=', values.get('company_id')),
+                ('only_for_internal_users', '=', values.get('only_for_internal_users'))
+            ]
 
-            # Fetch the rule(s) based on model, company, and internal user
-            rules = self.env['mail.replace.rule'].search([
-                ('model', '=', model),
-                ('company_id', '=', company.id),
-                ('only_for_internal_users', '=', internal_user)
-            ])
+            # Filter the rules based on the message_type
+            if message_type:
+                domain.append(('message_type_filter', '=', message_type))
+
+            rules = self.env['mail.replace.rule'].search(domain)
 
             for rule in rules:
-                # Check if the domain filter is set
+                # If domain filter is set, evaluate the conditions
                 if rule.domain_filter:
-                    # If domain filter is set, evaluate the conditions
                     try:
                         filter_condition = eval(rule.domain_filter)
                         if not isinstance(filter_condition, dict):
@@ -50,7 +105,7 @@ class MailMessage(models.Model):
                         for field, value in filter_condition.items():
                             # Retrieve the value of the field from the related model
                             if 'res_id' in values:
-                                related_record = self.env[model].browse(values.get('res_id'))
+                                related_record = self.env[values.get('model')].browse(values.get('res_id'))
                                 field_value = getattr(related_record, field, None)
 
                                 # If field is a relation (e.g., Many2one), retrieve the ID
@@ -70,7 +125,7 @@ class MailMessage(models.Model):
                         else:
                             # If all conditions match, apply the email replacements
                             _logger.info(f"Filter matched, updating emails for: {values}")
-                            email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
+                            email_from, reply_to = rule.get_email_from_reply_to(values.get('model'), values.get('company_id'), values.get('only_for_internal_users'))
                             if email_from:
                                 values.update({'email_from': email_from})
                             if reply_to is not None:
@@ -82,7 +137,7 @@ class MailMessage(models.Model):
                 else:
                     # If domain filter is not set, update the emails without filtering
                     _logger.info(f"No domain filter set. Updating emails for: {values}")
-                    email_from, reply_to = rule.get_email_from_reply_to(model, company, internal_user)
+                    email_from, reply_to = rule.get_email_from_reply_to(values.get('model'), values.get('company_id'), values.get('only_for_internal_users'))
                     if email_from:
                         values.update({'email_from': email_from})
                     if reply_to is not None:
