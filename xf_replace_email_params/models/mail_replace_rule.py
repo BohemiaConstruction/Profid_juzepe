@@ -19,8 +19,7 @@ class MailReplaceRule(models.Model):
             ('email_outgoing', 'Outgoing Email'),
             ('notification', 'System Notification'),
             ('auto_comment', 'Automated Comment'),
-            ('user_notification', 'User Notification'),
-            ('all', 'All Types')
+            ('user_notification', 'User Notification')
         ],
         string="Message Type Filter",
         default='all',
