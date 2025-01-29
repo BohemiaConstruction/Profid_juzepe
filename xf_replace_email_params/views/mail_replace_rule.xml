@@ -62,7 +62,7 @@
                                        invisible="reply_to_author"/>
                             </group>
                         <group>
-                            <field name="message_type_filter" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="message_type_filter" widget="selection"/>
                         </group>
                         </group>
                         <group name="help" string="Help">
