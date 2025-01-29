@@ -11,20 +11,6 @@ class MailReplaceRule(models.Model):
         string='Sequence',
         default=10,
     )
-    # Zde je definice pole message_type_filter
-    message_type_filter = fields.Selection(
-        [
-            ('email', 'Incoming Email'),
-            ('comment', 'User Comment'),
-            ('email_outgoing', 'Outgoing Email'),
-            ('notification', 'System Notification'),
-            ('auto_comment', 'Automated Comment'),
-            ('user_notification', 'User Notification')
-        ],
-        string="Message Type Filter",
-        default='email',
-        help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
-    )
     name = fields.Char(
         string='Rule Name',
         required=True,
@@ -199,17 +185,3 @@ class MailReplaceRule(models.Model):
         if rule:
             return rule.email_from_computed, rule.reply_to_computed
         return None, None
-
-    domain_filter = fields.Char(
-        string="Domain Filter",
-        help="A domain filter to apply the rule only for specific teams or models (e.g., support_team=1)."
-    )
-    
-    @api.model
-    def apply_rule(self, record):
-        if self.domain_filter:
-            # Evaluate the domain filter
-            filter_domain = eval(self.domain_filter)
-            if record.support_team != filter_domain.get('support_team'):
-                return
-        super(MailReplaceRule, self).apply_rule(record)
