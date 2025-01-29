@@ -22,7 +22,7 @@ class MailReplaceRule(models.Model):
             ('user_notification', 'User Notification')
         ],
         string="Message Type Filter",
-        default='all',
+        default='email',
         help="Select which message type the rule applies to. Select multiple types by holding Ctrl or Cmd."
     )
     name = fields.Char(
