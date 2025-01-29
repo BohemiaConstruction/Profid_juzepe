@@ -1,187 +1,86 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class MailReplaceRule(models.Model):
     _name = 'mail.replace.rule'
-    _description = 'Mail Replace Rule'
-    _order = 'sequence'
-    # Common Values
+    _description = 'Email Replacement Rule'
+
     sequence = fields.Integer(
         string='Sequence',
         default=10,
     )
-    name = fields.Char(
-        string='Rule Name',
-        required=True,
+    message_type_filter = fields.Selection(
+        [
+            ('email', 'Incoming Email'),
+            ('comment', 'User Comment'),
+            ('email_outgoing', 'Outgoing Email'),
+            ('notification', 'System Notification'),
+            ('auto_comment', 'Automated Comment'),
+            ('user_notification', 'User Notification')
+        ],
+        string="Message Type Filter",
+        default='email',
+        help="Select which message type the rule applies to."
     )
-    model_id = fields.Many2one(
-        string='Model',
-        comodel_name='ir.model',
-        ondelete='cascade',
+    domain_filter = fields.Char(
+        string="Domain Filter",
+        help="Filter criteria in dictionary format (e.g., {'support_team': 1})."
     )
-    model = fields.Char(
-        string='Model Name',
-        related='model_id.model',
-        store=True,
-        readonly=True,
-    )
-    company_id = fields.Many2one(
-        string='Company',
-        comodel_name='res.company',
-        default=lambda self: self.env.company,
-        ondelete='cascade',
-        index=True,
-    )
-    only_for_internal_users = fields.Boolean(
-        string='Only for Internal Users',
-        default=True,
-        help="""
-        If enabled the system will replace the "Email From" and "Reply To" values only for emails initiated by internal users. 
-        Please disable this checkbox only consciously, as it affects security.
-        """
-    )
-    # Email From
-    email_from_author = fields.Boolean(
-        string='Email From Author',
-        help='If enabled, the system will work as is and will not replace email_from parameter',
-    )
-    email_from = fields.Char(
-        string='Email From',
-    )
-    email_from_user_id = fields.Many2one(
-        string='Email From User',
-        comodel_name='res.users',
-        ondelete='cascade',
-    )
-    email_from_computed = fields.Char(
-        string='Email From (Computed)',
-        compute='_compute_email_from',
-    )
-    # Reply To
-    reply_to_author = fields.Boolean(
-        string='Reply To Author',
-        help='If enabled, the system will work as is and will not replace reply_to parameter',
-    )
-    reply_to = fields.Char(
-        string='Reply To',
-        help='Forcibly replace the reply_to parameter',
-    )
-    reply_to_user_id = fields.Many2one(
-        string='Reply To User',
-        comodel_name='res.users',
-        ondelete='cascade',
-        help='Forcibly replace the reply_to parameter with email of the selected user',
-    )
-    reply_to_computed = fields.Char(
-        string='Reply To (Computed)',
-        compute='_compute_reply_to',
-    )
-    _sql_constraints = [
-        ('model_company_uniq', 'unique (model_id,company_id)',
-         'The replacement rule for data model must be unique per company!')
-    ]
 
-    @api.depends('email_from', 'email_from_user_id', 'email_from_author')
-    def _compute_email_from(self):
-        for rule in self:
-            if rule.email_from:
-                rule.email_from_computed = rule.email_from
-            elif rule.email_from_user_id:
-                rule.email_from_computed = rule.email_from_user_id.email_formatted
-            elif rule.email_from_author:
-                rule.email_from_computed = self.env.user.email_formatted
+    @api.model
+    def apply_rule(self, values):
+        message_type = values.get('message_type', '')
+        
+        domain = [
+            ('model', '=', values.get('model')),
+            ('company_id', '=', values.get('company_id')),
+            ('only_for_internal_users', '=', values.get('only_for_internal_users'))
+        ]
+        
+        if message_type:
+            domain.append(('message_type_filter', '=', message_type))
+        
+        rules = self.search(domain)
+        
+        for rule in rules:
+            if rule.domain_filter:
+                try:
+                    filter_condition = eval(rule.domain_filter)
+                    if not isinstance(filter_condition, dict):
+                        raise ValidationError("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
+                    
+                    for field, value in filter_condition.items():
+                        if 'res_id' in values and values.get('model'):
+                            related_record = self.env[values.get('model')].browse(values.get('res_id'))
+                            field_value = getattr(related_record, field, None)
+
+                            if isinstance(field_value, models.BaseModel):
+                                field_value = field_value.id
+
+                            _logger.info(f"Checking {field} (value: {field_value}) against {value}")
+
+                            if field_value != value:
+                                _logger.info(f"Field {field} does not match filter. Skipping update.")
+                                break
+                    else:
+                        email_from, reply_to = rule.get_email_from_reply_to(
+                            values.get('model'), values.get('company_id'), values.get('only_for_internal_users')
+                        )
+                        if email_from:
+                            values.update({'email_from': email_from})
+                        if reply_to is not None:
+                            values.update({'reply_to': reply_to})
+                except Exception as e:
+                    _logger.error(f"Error applying filter: {e}")
+                    raise ValidationError(f"Invalid filter condition: {e}")
             else:
-                rule.email_from_computed = False
-
-    @api.depends('reply_to', 'reply_to_user_id', 'reply_to_author')
-    def _compute_reply_to(self):
-        for rule in self:
-            if rule.reply_to:
-                rule.reply_to_computed = rule.reply_to
-            elif rule.reply_to_user_id:
-                rule.reply_to_computed = rule.reply_to_user_id.email_formatted
-            elif rule.reply_to_author:
-                rule.reply_to_computed = self.env.user.email_formatted
-            else:
-                rule.reply_to_computed = False
-
-    @api.onchange('email_from_author')
-    def onchange_email_from_author(self):
-        for rule in self:
-            if rule.email_from_author:
-                rule.email_from = None
-                rule.email_from_user_id = None
-
-    @api.onchange('reply_to_author')
-    def onchange_reply_to_author(self):
-        for rule in self:
-            if rule.reply_to_author:
-                rule.reply_to = None
-                rule.reply_to_user_id = None
-
-    @api.constrains('email_from_author', 'email_from', 'email_from_user_id')
-    def _check_email_from(self):
-        for rule in self:
-            if not rule.email_from_author and not rule.email_from_computed:
-                raise ValidationError(_('Please set any email_from option!'))
-
-    @api.constrains('reply_to_author', 'reply_to', 'reply_to_user_id')
-    def _check_reply_to(self):
-        for rule in self:
-            if not rule.reply_to_author and not rule.reply_to_computed:
-                raise ValidationError(_('Please set any reply_to option!'))
-
-    def get_rule(self, model=None, company=None, internal_user=None):
-        rule = None
-        if model and company:
-            rule = self.get_strict_rule(model, company, internal_user)
-            if not rule:
-                rule = self.get_model_rule(model, internal_user)
-            if not rule:
-                rule = self.get_company_rule(company, internal_user)
-        elif model and not company:
-            rule = self.get_model_rule(model, internal_user)
-        elif not model and company:
-            rule = self.get_company_rule(company, internal_user)
-        if not rule:
-            rule = self.get_global_rule(internal_user)
-        return rule
-
-    def get_strict_rule(self, model, company, internal_user):
-        domain = [
-            ('model', '=', model),
-            ('company_id', '=', company.id),
-            ('only_for_internal_users', '=', internal_user),
-        ]
-        return self.search(domain, limit=1)
-
-    def get_model_rule(self, model, internal_user):
-        domain = [
-            ('model', '=', model),
-            ('company_id', '=', False),
-            ('only_for_internal_users', '=', internal_user),
-        ]
-        return self.search(domain, limit=1)
-
-    def get_company_rule(self, company, internal_user):
-        domain = [
-            ('model_id', '=', False),
-            ('company_id', '=', company.id),
-            ('only_for_internal_users', '=', internal_user),
-        ]
-        return self.search(domain, limit=1)
-
-    def get_global_rule(self, internal_user):
-        domain = [
-            ('model_id', '=', False),
-            ('company_id', '=', False),
-            ('only_for_internal_users', '=', internal_user),
-        ]
-        return self.search(domain, limit=1)
-
-    def get_email_from_reply_to(self, model, company, internal_user):
-        rule = self.get_rule(model, company, internal_user)
-        if rule:
-            return rule.email_from_computed, rule.reply_to_computed
-        return None, None
+                email_from, reply_to = rule.get_email_from_reply_to(
+                    values.get('model'), values.get('company_id'), values.get('only_for_internal_users')
+                )
+                if email_from:
+                    values.update({'email_from': email_from})
+                if reply_to is not None:
+                    values.update({'reply_to': reply_to})
