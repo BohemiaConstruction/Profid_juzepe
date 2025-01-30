@@ -31,7 +31,8 @@ class MailMessage(models.Model):
                     try:
                         filter_condition = eval(rule.domain_filter)
                         if not isinstance(filter_condition, dict):
-                            raise ValueError("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
+                            _logger.warning("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
+                            continue
                         
                         for field, value in filter_condition.items():
                             if 'res_id' in values:
@@ -56,7 +57,7 @@ class MailMessage(models.Model):
                                 values.update({'reply_to': reply_to})
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
-                        raise ValueError(f"Invalid filter condition: {e}")
+                        continue
                 
                 # Filtrace podle velikosti příloh
                 if rule.min_attachment_size:
