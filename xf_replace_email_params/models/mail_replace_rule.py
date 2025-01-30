@@ -113,7 +113,7 @@ class MailReplaceRule(models.Model):
         res = super(YourModel, self).fields_view_get(view_id, view_type, toolbar, submenu)
         for field in res['fields']:
             if field == 'domain_filter':
-                res['fields'][field]['context'] = "{'model': self.env.context.get('model', '')}"
+                res['fields'][field]['options'] = "{'model': self.env.context.get('model', '')}"
         return res
 
 
