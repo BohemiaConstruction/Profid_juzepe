@@ -45,7 +45,11 @@ class MailReplaceRule(models.Model):
         store=True,
         readonly=True,
     )
-    model_name = fields.Char(string="Model Name", compute="_compute_model_name", store=True)
+    model_name = fields.Char(
+        string="Model Name",
+        compute="_compute_model_name",
+        store=True,
+    )
     company_id = fields.Many2one(
         string='Company',
         comodel_name='res.company',
