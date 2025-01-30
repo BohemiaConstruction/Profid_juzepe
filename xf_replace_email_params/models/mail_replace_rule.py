@@ -45,6 +45,7 @@ class MailReplaceRule(models.Model):
         store=True,
         readonly=True,
     )
+    model_name = fields.Char(string="Model Name", compute="_compute_model_name", store=True)
     company_id = fields.Many2one(
         string='Company',
         comodel_name='res.company',
@@ -101,11 +102,16 @@ class MailReplaceRule(models.Model):
          'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
 
+    @api.depends('model_id')
+    def _compute_model_name(self):
+        for record in self:
+            record.model_name = record.model_id.model if record.model_id else ""
+
     @api.onchange('model_id')
     def onchange_model_id(self):
         """ Při změně modelu nastaví správný context pro widget domain """
         if self.model_id:
-            return {'context': {'model': self.model}}
+            return {'context': {'model': self.model_id.model}}
 
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):
