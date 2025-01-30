@@ -62,9 +62,9 @@ class MailMessage(models.Model):
                 if rule.min_attachment_size:
                     attachment_ids = []
                     for command in values.get('attachment_ids', []):
-                        if isinstance(command, (list, tuple)) and len(command) >= 3:
+                        if isinstance(command, (list, tuple)) and len(command) >= 3 and isinstance(command[2], list):
                             attachment_ids.extend(command[2])  # Extrahujeme ID příloh
-                        elif isinstance(command, (list, tuple)) and command[0] == 4:
+                        elif isinstance(command, (list, tuple)) and command[0] == 4 and isinstance(command[1], int):
                             attachment_ids.append(command[1])  # Přidání jednotlivých příloh
                     
                     valid_attachments = []
