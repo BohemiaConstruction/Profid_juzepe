@@ -45,11 +45,6 @@ class MailReplaceRule(models.Model):
         store=True,
         readonly=True,
     )
-    model_name = fields.Char(
-        string="Model Name",
-        compute="_compute_model_name",
-        store=True,
-    )
     company_id = fields.Many2one(
         string='Company',
         comodel_name='res.company',
@@ -105,11 +100,6 @@ class MailReplaceRule(models.Model):
         ('model_company_message_type_domain_uniq', 'unique (model_id, company_id, message_type_filter, domain_filter)',
          'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
-
-    @api.depends('model_id')
-    def _compute_model_name(self):
-        for record in self:
-            record.model_name = record.model_id.model if record.model_id else ""
 
     @api.onchange('model_id')
     def onchange_model_id(self):
