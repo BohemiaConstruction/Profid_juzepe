@@ -101,7 +101,6 @@ class MailReplaceRule(models.Model):
          'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
 
-    model_name = fields.Char(string="Model Name", compute="_compute_model_name", store=True)
     @api.depends('model_id')
     def _compute_model_name(self):
         """ Automaticky nastaví model_name podle model_id """
@@ -110,20 +109,11 @@ class MailReplaceRule(models.Model):
 
     @api.onchange('model_id')
     def onchange_model_id(self):
-        """ Dynamicky nastaví options pro domain widget """
+        """ Dynamicky nastaví options přes context """
         if self.model_id:
-            self.env.context = dict(self.env.context, model=self.model_id.model)
-
-    @api.model
-    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
-        """ Dynamicky nastaví options pro domain widget """
-        res = super(YourModel, self).fields_view_get(view_id, view_type, toolbar, submenu)
-        model_name = self.env.context.get('model', '')
-
-        if 'fields' in res and 'domain_filter' in res['fields']:
-            res['fields']['domain_filter']['options'] = {'model': model_name}
-
-        return res
+            return {
+                'context': {'model': self.model_id.model}
+            }
 
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):

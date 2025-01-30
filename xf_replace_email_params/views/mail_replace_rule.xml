@@ -32,11 +32,10 @@
                         <group>
                             <group>
 <field name="model_id" onchange="onchange_model_id()"/>
-<field name="model"/>
 <field name="domain_filter"
        widget="domain"
-       options="{'in_dialog': true}"
-       modifiers="{'invisible': [['model_id', '=', False]]}"/>
+       context="{'model': model_name}"
+       options="{'in_dialog': true}"/>
                         <field name="min_attachment_size"/>
                             </group>
                             <group>
