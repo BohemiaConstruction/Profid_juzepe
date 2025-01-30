@@ -105,7 +105,7 @@ class MailReplaceRule(models.Model):
     def onchange_model_id(self):
         """ Při změně modelu nastaví správný context pro widget domain """
         if self.model_id:
-            return {'context': {'model': self.model_id.model}}
+            return {'context': {'model': self.model}}
 
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):
