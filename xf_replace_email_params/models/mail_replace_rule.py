@@ -109,22 +109,13 @@ class MailReplaceRule(models.Model):
             record.model_name = record.model_id.model if record.model_id else ""
 
     @api.onchange('model_id')
-    def onchange_model_id(self):
-        """ Dynamicky nastaví options pro domain widget """
-        if self.model_id:
-            self.env.context = dict(self.env.context, model=self.model_id.model)
-            return {
-                'options': {'model': self.model_id.model}
-            }
-
-    @api.model
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
         """ Dynamicky nastaví options pro domain widget """
         res = super().fields_view_get(view_id, view_type, toolbar, submenu)
         model_name = self.env.context.get('model', '')
 
         if 'fields' in res and 'domain_filter' in res['fields']:
-            res['fields']['domain_filter']['options'] = {'model': model_name}
+            res['fields']['domain_filter']['options'] = {'model': model}
 
         return res
 
