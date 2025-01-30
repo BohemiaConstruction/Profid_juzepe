@@ -32,7 +32,7 @@
                         <group>
                             <group>
                         <field name="model_id"/>
-                        <field name="domain_filter" widget="domain" context="{'model': model_id}"/>
+                        <field name="domain_filter" widget="domain" context="{'model': model_id.model}"/>
                         <field name="min_attachment_size"/>
                             </group>
                             <group>
