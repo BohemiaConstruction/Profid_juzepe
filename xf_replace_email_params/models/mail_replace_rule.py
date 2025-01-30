@@ -97,8 +97,8 @@ class MailReplaceRule(models.Model):
         compute='_compute_reply_to',
     )
     _sql_constraints = [
-        ('model_company_uniq', 'unique (model_id,company_id)',
-         'The replacement rule for data model must be unique per company!')
+        ('model_company_message_type_domain_uniq', 'unique (model_id, company_id, message_type_filter, domain_filter)',
+         'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
 
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
