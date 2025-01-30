@@ -32,7 +32,7 @@
                         <group>
                             <group>
                         <field name="model_id" onchange="onchange_model_id()"/>
-                        <field name="domain_filter" widget="domain" context="{'model': model_name}" options="{'in_dialog': true}"/>
+                        <field name="domain_filter" widget="domain" context="{'model': model}" options="{'in_dialog': true}"/>
                         <field name="min_attachment_size"/>
                             </group>
                             <group>
