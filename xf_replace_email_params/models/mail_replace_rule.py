@@ -103,9 +103,18 @@ class MailReplaceRule(models.Model):
 
     @api.onchange('model_id')
     def onchange_model_id(self):
-        """ Při změně modelu nastaví správný context pro widget domain """
+        """ Dynamicky aktualizuje kontext pro domain widget """
         if self.model_id:
-            return {'context': {'model': self.model_id.model}}
+            self.env.context = dict(self.env.context, model=self.model_id.model)
+
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        """ Dynamicky nastaví context pro domain widget """
+        res = super(YourModel, self).fields_view_get(view_id, view_type, toolbar, submenu)
+        if self.env.context.get('model'):
+            res['fields']['domain_filter']['context'] = "{'model': '%s'}" % self.env.context['model']
+        return res
+
 
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):
