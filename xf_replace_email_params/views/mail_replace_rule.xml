@@ -31,11 +31,9 @@
                         </group>
                         <group>
                             <group>
-<field name="model_id" onchange="onchange_model_id()"/>
-<field name="domain_filter"
-       widget="domain"
-       context="{'model': model_name}"
-       options="{'in_dialog': true}"/>
+                        <field name="model_id"/>
+                        <field name="domain_filter"/>
+                        <field name="message_type_filter" widget="selection"/>
                         <field name="min_attachment_size"/>
                             </group>
                             <group>
@@ -65,9 +63,6 @@
                                 <field name="reply_to_user_id"
                                        invisible="reply_to_author"/>
                             </group>
-                        <group>
-                            <field name="message_type_filter" widget="selection"/>
-                        </group>
                         </group>
                         <group name="help" string="Help">
                             <p colspan="2">

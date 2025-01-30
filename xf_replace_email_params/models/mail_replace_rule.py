@@ -101,20 +101,6 @@ class MailReplaceRule(models.Model):
          'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
 
-    @api.depends('model_id')
-    def _compute_model_name(self):
-        """ Automaticky nastaví model_name podle model_id """
-        for record in self:
-            record.model_name = record.model_id.model if record.model_id else ""
-
-    @api.onchange('model_id')
-    def onchange_model_id(self):
-        """ Dynamicky nastaví options přes context """
-        if self.model_id:
-            return {
-                'context': {'model': self.model_id.model}
-            }
-
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):
         for rule in self:
