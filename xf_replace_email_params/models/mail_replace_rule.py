@@ -101,6 +101,12 @@ class MailReplaceRule(models.Model):
          'The replacement rule for data model must be unique per company, message type, and domain filter!')
     ]
 
+    @api.onchange('model_id')
+    def onchange_model_id(self):
+        """ Při změně modelu nastaví správný context pro widget domain """
+        if self.model_id:
+            return {'context': {'model': self.model_id.model}}
+
     @api.depends('email_from', 'email_from_user_id', 'email_from_author')
     def _compute_email_from(self):
         for rule in self:
