@@ -60,13 +60,20 @@ class MailMessage(models.Model):
                 
                 # Filtrace podle velikosti příloh
                 if rule.min_attachment_size:
-                    attachments = values.get('attachment_ids', [])
+                    attachment_ids = []
+                    for command in values.get('attachment_ids', []):
+                        if isinstance(command, (list, tuple)) and len(command) >= 3:
+                            attachment_ids.extend(command[2])  # Extrahujeme ID příloh
+                        elif isinstance(command, (list, tuple)) and command[0] == 4:
+                            attachment_ids.append(command[1])  # Přidání jednotlivých příloh
+                    
                     valid_attachments = []
-                    for attachment in self.env['ir.attachment'].browse(attachments):
+                    for attachment in self.env['ir.attachment'].browse(attachment_ids):
                         if attachment.file_size >= rule.min_attachment_size:
                             valid_attachments.append(attachment.id)
                         else:
                             _logger.info(f"Attachment {attachment.name} removed due to size {attachment.file_size} < {rule.min_attachment_size}")
+                    
                     values['attachment_ids'] = [(6, 0, valid_attachments)]
                 
                 # Pokud bylo pravidlo aplikováno, neaplikujeme další pravidla
