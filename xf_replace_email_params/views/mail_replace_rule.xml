@@ -31,9 +31,9 @@
                         </group>
                         <group>
                             <group>
-                                <field name="model_id"/>
-                                    <field name="domain_filter"/>
-                                    <field name="min_attachment_size"/>
+                        <field name="model_id"/>
+                        <field name="domain_filter" widget="domain" context="{'model': model_id}"/>
+                        <field name="min_attachment_size"/>
                             </group>
                             <group>
                                 <field name="company_id" groups="base.group_multi_company"/>
