@@ -111,8 +111,9 @@ class MailReplaceRule(models.Model):
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
         """ Dynamicky nastaví context pro domain widget """
         res = super(YourModel, self).fields_view_get(view_id, view_type, toolbar, submenu)
-        if self.env.context.get('model'):
-            res['fields']['domain_filter']['context'] = "{'model': '%s'}" % self.env.context['model']
+        for field in res['fields']:
+            if field == 'domain_filter':
+                res['fields'][field]['context'] = "{'model': self.env.context.get('model', '')}"
         return res
 
 
