@@ -23,7 +23,6 @@ class MailMessage(models.Model):
             company = user and user.company_id
             internal_user = user and user.has_group('base.group_user')
             
-            # Filtrace pravidel podle message_type a domain_filter
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
@@ -58,12 +57,19 @@ class MailMessage(models.Model):
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
                         raise ValueError(f"Invalid filter condition: {e}")
-                else:
-                    _logger.info(f"No domain filter set. Updating emails for: {values}")
-                    email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(model, company, internal_user)
-                    if email_from:
-                        values.update({'email_from': email_from})
-                    if reply_to is not None:
-                        values.update({'reply_to': reply_to})
+                
+                # Filtrace podle velikosti příloh
+                if rule.min_attachment_size:
+                    attachments = values.get('attachment_ids', [])
+                    valid_attachments = []
+                    for attachment in self.env['ir.attachment'].browse(attachments):
+                        if attachment.file_size >= rule.min_attachment_size:
+                            valid_attachments.append(attachment.id)
+                        else:
+                            _logger.info(f"Attachment {attachment.name} removed due to size {attachment.file_size} < {rule.min_attachment_size}")
+                    values['attachment_ids'] = [(6, 0, valid_attachments)]
+                
+                # Pokud bylo pravidlo aplikováno, neaplikujeme další pravidla
+                break
         
         return super(MailMessage, self).create(values_list)
