@@ -5,41 +5,55 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='sales']" position="inside">
-                <div class="oe_chatter">
-                    <canvas id="salesChart" style="max-width: 600px;"></canvas>
-                </div>
-                <script src="/web/static/lib/Chart.bundle.js"></script>
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        var urlParams = new URLSearchParams(window.location.search);
-                        var product_id = urlParams.get('id');
-
-                        if (!product_id) {
-                            console.error("Product ID not found in URL params");
-                            return;
-                        }
-
-                        $.getJSON('/product_turnover/data/' + product_id, function(data) {
-                            var ctx = document.getElementById('salesChart').getContext('2d');
-                            new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: data.dates,
-                                    datasets: [{
-                                        label: 'Sales',
-                                        data: data.sales,
-                                        borderColor: 'blue',
-                                        fill: false
-                                    }]
-                                }
-                            });
-                        }).fail(function() {
-                            console.error("Failed to load sales data");
-                        });
-                    });
-                </script>
+            <xpath expr="//group[hasclass('oe_title')]" position="after">
+                <group>
+                    <field name="avg_daily_sales"/>
+                    <field name="median_daily_sales"/>
+                    <field name="median_nonzero_daily_sales"/>
+                    <field name="max_daily_sales"/>
+                    <field name="predicted_daily_sales"/>
+                    <button name="action_recompute_sales_metrics" type="object" string="Recompute Sales Metrics" class="oe_highlight"/>
+                </group>
+                <group>
+                    <div>
+                        <canvas id="salesChart" style="max-width: 600px;"></canvas>
+                    </div>
+                </group>
             </xpath>
+            <script src="/web/static/lib/Chart.bundle.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var product_id = urlParams.get('id');
+
+                    console.log("Product ID extracted:", product_id);
+
+                    if (!product_id) {
+                        console.error("Product ID not found in URL params");
+                        return;
+                    }
+
+                    $.getJSON('/product_turnover/data/' + product_id, function(data) {
+                        console.log("Fetched sales data:", data);
+
+                        var ctx = document.getElementById('salesChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.dates,
+                                datasets: [{
+                                    label: 'Sales',
+                                    data: data.sales,
+                                    borderColor: 'blue',
+                                    fill: false
+                                }]
+                            }
+                        });
+                    }).fail(function() {
+                        console.error("Failed to load sales data");
+                    });
+                });
+            </script>
         </field>
     </record>
 </odoo>
