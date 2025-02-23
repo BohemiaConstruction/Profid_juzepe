@@ -15,12 +15,8 @@
                     <button name="action_recompute_sales_metrics" type="object" string="Recompute Sales Metrics" class="oe_highlight"/>
                 </group>
                 <group>
-                    <div>
-                        <canvas id="salesChart" style="max-width: 600px;"></canvas>
-                    </div>
+                    <field name="sales_graph" widget="graph" options="{'type': 'bar'}"/>
                 </group>
-                <script type="text/javascript" src="/product_turnover_systee/static/lib/chart.bundle.min.js"></script>
-                <script type="text/javascript" src="/product_turnover_systee/static/src/js/product_turnover.js"></script>
             </xpath>
         </field>
     </record>
