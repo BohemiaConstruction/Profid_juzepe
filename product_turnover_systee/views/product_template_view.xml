@@ -11,8 +11,15 @@
                 </div>
                 <script src="/web/static/lib/Chart.bundle.js"></script>
                 <script>
-                    $(document).ready(function() {
-                        var product_id = odoo.context.active_id;
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var product_id = urlParams.get('id');
+
+                        if (!product_id) {
+                            console.error("Product ID not found in URL params");
+                            return;
+                        }
+
                         $.getJSON('/product_turnover/data/' + product_id, function(data) {
                             var ctx = document.getElementById('salesChart').getContext('2d');
                             new Chart(ctx, {
@@ -27,6 +34,8 @@
                                     }]
                                 }
                             });
+                        }).fail(function() {
+                            console.error("Failed to load sales data");
                         });
                     });
                 </script>
