@@ -7,7 +7,6 @@
     'depends': ['sale', 'stock'],
     'data': [
         'views/product_template_view.xml',
-        'views/stock_warehouse_orderpoint_view.xml',
         'data/ir_cron_data.xml',
     ],
     'installable': True,
