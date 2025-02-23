@@ -14,7 +14,7 @@ class ProductTemplate(models.Model):
     median_nonzero_daily_sales = fields.Float(string="Median Daily Sales (Non-Zero Days)", compute="_compute_sales_metrics", store=True)
     max_daily_sales = fields.Float(string="Max Daily Sales", compute="_compute_sales_metrics", store=True)
     predicted_daily_sales = fields.Float(string="Predicted Daily Sales (Linear Fit)", compute="_compute_sales_metrics", store=True)
-    sales_period_days = fields.Integer(string="Sales Period (Days)", default=30)
+    sales_period_days = fields.Integer(string="Sales Period History (Days)", default=90)
 
     fastest_lead_delay = fields.Float(string="Fastest Lead Time", compute="_compute_fastest_lead_time", store=True)
     fsbnp = fields.Float(string="Forecasted Sales before next Purchase", compute="_compute_fsbnp", store=True)
