@@ -5,9 +5,6 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//head" position="inside">
-                <script src="/web/static/lib/Chart.bundle.js"></script>
-            </xpath>
             <xpath expr="//page[@name='sales']" position="inside">
                 <group>
                     <field name="avg_daily_sales"/>
@@ -22,40 +19,41 @@
                         <canvas id="salesChart" style="max-width: 600px;"></canvas>
                     </div>
                 </group>
-            </xpath>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    var urlParams = new URLSearchParams(window.location.search);
-                    var product_id = urlParams.get('id');
+                <script src="/web/static/lib/Chart.bundle.js"></script>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var product_id = urlParams.get('id');
 
-                    console.log("Product ID extracted:", product_id);
+                        console.log("Product ID extracted:", product_id);
 
-                    if (!product_id) {
-                        console.error("Product ID not found in URL params");
-                        return;
-                    }
+                        if (!product_id) {
+                            console.error("Product ID not found in URL params");
+                            return;
+                        }
 
-                    $.getJSON('/product_turnover/data/' + product_id, function(data) {
-                        console.log("Fetched sales data:", data);
-                        
-                        var ctx = document.getElementById('salesChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: data.dates,
-                                datasets: [{
-                                    label: 'Sales',
-                                    data: data.sales,
-                                    borderColor: 'blue',
-                                    fill: false
-                                }]
-                            }
+                        $.getJSON('/product_turnover/data/' + product_id, function(data) {
+                            console.log("Fetched sales data:", data);
+                            
+                            var ctx = document.getElementById('salesChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: data.dates,
+                                    datasets: [{
+                                        label: 'Sales',
+                                        data: data.sales,
+                                        borderColor: 'blue',
+                                        fill: false
+                                    }]
+                                }
+                            });
+                        }).fail(function() {
+                            console.error("Failed to load sales data");
                         });
-                    }).fail(function() {
-                        console.error("Failed to load sales data");
                     });
-                });
-            </script>
+                </script>
+            </xpath>
         </field>
     </record>
 </odoo>
