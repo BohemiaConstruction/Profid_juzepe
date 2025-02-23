@@ -5,7 +5,6 @@
     'category': 'Sales',
     'author': 'Your Name',
     'depends': ['sale', 'stock'],
-    'external_dependencies': {'python': ['numpy']},
     'data': [
         'views/product_template_view.xml',
         'data/ir_cron_data.xml',
