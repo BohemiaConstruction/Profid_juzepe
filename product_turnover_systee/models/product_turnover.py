@@ -16,17 +16,22 @@ class ProductProduct(models.Model):
             domain = [('product_id', '=', product.id), ('state', 'in', ['sale', 'done'])]
             orders = self.env['sale.order.line'].search(domain)
             sales_data = {}
-
+            
+            today = date.today()
+            start_date = today - timedelta(days=product.sales_period_days)
+            
             for line in orders:
-                date = line.order_id.date_order.date()
-                sales_data[date] = sales_data.get(date, 0) + line.product_uom_qty
-
+                order_date = line.order_id.date_order.date()
+                if order_date >= start_date:
+                    sales_data[order_date] = sales_data.get(order_date, 0) + line.product_uom_qty
+            
             daily_sales = list(sales_data.values())
-            total_days = len(daily_sales) or 1
-
-            product.avg_daily_sales = sum(daily_sales) / total_days
+            total_period_days = product.sales_period_days
+            
+            total_sales = sum(daily_sales)
+            product.avg_daily_sales = total_sales / total_period_days if total_period_days > 0 else 0
             product.max_daily_sales = max(daily_sales) if daily_sales else 0
-
+            
             if daily_sales:
                 product.median_daily_sales = statistics.median(daily_sales)
             else:
