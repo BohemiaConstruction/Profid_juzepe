@@ -9,7 +9,8 @@ class ProductProduct(models.Model):
     _inherit = "product.product"
 
     avg_daily_sales = fields.Float(string="Average Daily Sales", compute="_compute_sales_metrics", store=True)
-    median_daily_sales = fields.Float(string="Median Daily Sales", compute="_compute_sales_metrics", store=True)
+    median_daily_sales = fields.Float(string="Median Daily Sales (All Days)", compute="_compute_sales_metrics", store=True)
+    median_nonzero_daily_sales = fields.Float(string="Median Daily Sales (Non-Zero Days)", compute="_compute_sales_metrics", store=True)
     max_daily_sales = fields.Float(string="Max Daily Sales", compute="_compute_sales_metrics", store=True)
     sales_period_days = fields.Integer(string="Sales Period (Days)", default=30)
 
@@ -30,37 +31,21 @@ class ProductProduct(models.Model):
                     sales_data[order_date] += line.product_uom_qty
             
             daily_sales = list(sales_data.values())
+            nonzero_sales = [qty for qty in daily_sales if qty > 0]
             total_period_days = product.sales_period_days
             
             total_sales = sum(daily_sales)
             product.avg_daily_sales = total_sales / total_period_days if total_period_days > 0 else 0
             product.max_daily_sales = max(daily_sales) if daily_sales else 0
             
-            sorted_sales = sorted(daily_sales)  # Seřazení dat pro správný medián
+            sorted_sales = sorted(daily_sales)
+            sorted_nonzero_sales = sorted(nonzero_sales)
             
             _logger.info("Sales data for %s: %s", product.name, sorted_sales)
+            _logger.info("Nonzero Sales data for %s: %s", product.name, sorted_nonzero_sales)
             
-            if sorted_sales:
-                product.median_daily_sales = statistics.median(sorted_sales)
-            else:
-                product.median_daily_sales = 0
+            product.median_daily_sales = statistics.median(sorted_sales) if sorted_sales else 0
+            product.median_nonzero_daily_sales = statistics.median(sorted_nonzero_sales) if sorted_nonzero_sales else 0
 
     def action_recompute_sales_metrics(self):
         self._compute_sales_metrics()
-
-class StockWarehouseOrderpoint(models.Model):
-    _inherit = "stock.warehouse.orderpoint"
-
-    avg_daily_sales = fields.Float(related="product_id.avg_daily_sales", string="Average Daily Sales", readonly=True)
-    median_daily_sales = fields.Float(related="product_id.median_daily_sales", string="Median Daily Sales", readonly=True)
-    max_daily_sales = fields.Float(related="product_id.max_daily_sales", string="Max Daily Sales", readonly=True)
-    sales_period_days = fields.Integer(related="product_id.sales_period_days", string="Sales Period (Days)", readonly=True)
-
-class ProductTurnoverCron(models.Model):
-    _name = "product.turnover.cron"
-    _description = "Scheduled Task for Product Turnover Calculation"
-
-    @api.model
-    def compute_product_turnover(self):
-        products = self.env['product.product'].search([])
-        products._compute_sales_metrics()
