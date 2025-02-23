@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-from datetime import timedelta
+from datetime import timedelta, date
 import statistics
 
 class ProductProduct(models.Model):
@@ -47,3 +47,12 @@ class StockWarehouseOrderpoint(models.Model):
     median_daily_sales = fields.Float(related="product_id.median_daily_sales", string="Median Daily Sales", readonly=True)
     max_daily_sales = fields.Float(related="product_id.max_daily_sales", string="Max Daily Sales", readonly=True)
     sales_period_days = fields.Integer(related="product_id.sales_period_days", string="Sales Period (Days)", readonly=True)
+
+class ProductTurnoverCron(models.Model):
+    _name = "product.turnover.cron"
+    _description = "Scheduled Task for Product Turnover Calculation"
+
+    @api.model
+    def compute_product_turnover(self):
+        products = self.env['product.product'].search([])
+        products._compute_sales_metrics()
