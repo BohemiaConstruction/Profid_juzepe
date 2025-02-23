@@ -1,6 +1,9 @@
 from odoo import models, fields, api
 from datetime import timedelta, date
 import statistics
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class ProductProduct(models.Model):
     _inherit = "product.product"
@@ -35,7 +38,7 @@ class ProductProduct(models.Model):
             
             sorted_sales = sorted(daily_sales)  # Seřazení dat pro správný medián
             
-            _logger.info(f"Sales data for {product.name}: {sorted_sales}")
+            _logger.info("Sales data for %s: %s", product.name, sorted_sales)
             
             if sorted_sales:
                 product.median_daily_sales = statistics.median(sorted_sales)
