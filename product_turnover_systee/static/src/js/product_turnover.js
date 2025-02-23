@@ -1,42 +1,50 @@
-odoo.define('product_turnover_systee.sales_chart', ['web.core'], function(require) {
-    "use strict";
+/** @odoo-module **/
+import { registry } from "@web/core/registry";
+import { onMounted } from "@odoo/owl";
 
-    var core = require('web.core');
+export function renderSalesChart() {
+    console.log("Product Turnover Chart - Initialized");
 
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof Chart === "undefined") {
-            console.error("Chart.js is not loaded!");
-            return;
-        }
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js is not loaded!");
+        return;
+    }
 
-        var product_id = $('input[name=id]').val();
-        console.log("Extracted Product ID:", product_id);
+    const product_id = document.querySelector('input[name=id]')?.value;
+    console.log("Extracted Product ID:", product_id);
 
-        if (!product_id) {
-            console.error("Product ID not found");
-            return;
-        }
+    if (!product_id) {
+        console.error("Product ID not found");
+        return;
+    }
 
-        $.getJSON('/product_turnover/data/' + product_id, function(data) {
+    fetch(`/product_turnover/data/${product_id}`)
+        .then(response => response.json())
+        .then(data => {
             console.log("Fetched sales data:", data);
-            
-            var ctx = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.dates,
-                    datasets: [{
-                        label: 'Sales',
-                        data: data.sales,
-                        borderColor: 'blue',
-                        fill: false
-                    }]
-                }
-            });
-        }).fail(function() {
-            console.error("Failed to load sales data");
-        });
-    });
 
-    return core;
+            const ctx = document.getElementById('salesChart')?.getContext('2d');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Sales',
+                            data: data.sales,
+                            borderColor: 'blue',
+                            fill: false
+                        }]
+                    }
+                });
+            } else {
+                console.error("Canvas element for Chart.js not found!");
+            }
+        })
+        .catch(error => console.error("Failed to load sales data:", error));
+}
+
+// Spustíme funkci po načtení stránky
+onMounted(() => {
+    renderSalesChart();
 });
