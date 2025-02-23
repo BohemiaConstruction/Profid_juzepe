@@ -15,7 +15,11 @@ class ProductProduct(models.Model):
         for product in self:
             domain = [('product_id', '=', product.id), ('state', 'in', ['sale', 'done'])]
             orders = self.env['sale.order.line'].search(domain)
-            sales_data = {date.today() - timedelta(days=i): 0 for i in range(product.sales_period_days)}
+            
+            today = date.today()
+            start_date = today - timedelta(days=product.sales_period_days)
+            
+            sales_data = {start_date + timedelta(days=i): 0 for i in range(product.sales_period_days)}
             
             for line in orders:
                 order_date = line.order_id.date_order.date()
@@ -29,7 +33,8 @@ class ProductProduct(models.Model):
             product.avg_daily_sales = total_sales / total_period_days if total_period_days > 0 else 0
             product.max_daily_sales = max(daily_sales) if daily_sales else 0
             
-            if daily_sales:
+            # Medián by měl být spočítán z kompletního datasetu včetně nul
+            if daily_sales and len(daily_sales) > 0:
                 product.median_daily_sales = statistics.median(daily_sales)
             else:
                 product.median_daily_sales = 0
