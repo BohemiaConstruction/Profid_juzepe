@@ -15,15 +15,12 @@ class ProductProduct(models.Model):
         for product in self:
             domain = [('product_id', '=', product.id), ('state', 'in', ['sale', 'done'])]
             orders = self.env['sale.order.line'].search(domain)
-            sales_data = {}
-            
-            today = date.today()
-            start_date = today - timedelta(days=product.sales_period_days)
+            sales_data = {date.today() - timedelta(days=i): 0 for i in range(product.sales_period_days)}
             
             for line in orders:
                 order_date = line.order_id.date_order.date()
-                if order_date >= start_date:
-                    sales_data[order_date] = sales_data.get(order_date, 0) + line.product_uom_qty
+                if order_date in sales_data:
+                    sales_data[order_date] += line.product_uom_qty
             
             daily_sales = list(sales_data.values())
             total_period_days = product.sales_period_days
