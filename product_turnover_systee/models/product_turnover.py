@@ -33,9 +33,12 @@ class ProductProduct(models.Model):
             product.avg_daily_sales = total_sales / total_period_days if total_period_days > 0 else 0
             product.max_daily_sales = max(daily_sales) if daily_sales else 0
             
-            # Medián by měl být spočítán z kompletního datasetu včetně nul
-            if daily_sales and len(daily_sales) > 0:
-                product.median_daily_sales = statistics.median(daily_sales)
+            sorted_sales = sorted(daily_sales)  # Seřazení dat pro správný medián
+            
+            _logger.info(f"Sales data for {product.name}: {sorted_sales}")
+            
+            if sorted_sales:
+                product.median_daily_sales = statistics.median(sorted_sales)
             else:
                 product.median_daily_sales = 0
 
