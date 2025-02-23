@@ -3,16 +3,14 @@
     <record id="view_orderpoint_form_inherited" model="ir.ui.view">
         <field name="name">view.orderpoint.form.inherited</field>
         <field name="model">stock.warehouse.orderpoint</field>
-        <field name="inherit_id" ref="stock.view_orderpoint_form"/>
+        <field name="inherit_id" ref="stock.warehouse.orderpoint.tree.editable"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet/group" position="inside">
-                <group>
-                    <field name="avg_daily_sales"/>
-                    <field name="median_daily_sales"/>
-                    <field name="median_nonzero_daily_sales"/>
-                    <field name="max_daily_sales"/>
-                    <field name="sales_period_days"/>
-                </group>
+            <xpath expr="//tree" position="inside">
+                <field name="avg_daily_sales"/>
+                <field name="median_daily_sales"/>
+                <field name="median_nonzero_daily_sales"/>
+                <field name="max_daily_sales"/>
+                <field name="sales_period_days"/>
             </xpath>
         </field>
     </record>
