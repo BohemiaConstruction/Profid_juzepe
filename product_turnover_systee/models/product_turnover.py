@@ -20,7 +20,7 @@ class ProductTemplate(models.Model):
     fsbnp = fields.Float(string="Forecasted Sales before next Purchase", compute="_compute_fsbnp", store=True)
     forecasted_with_sales = fields.Float(string="Forecasted with Sales", compute="_compute_forecasted_with_sales", store=True)
 
-    @api.depends('sales_period_days', 'product_variant_ids.sale_order_ids.order_line.product_uom_qty')
+    @api.depends('sales_period_days')
     def _compute_sales_metrics(self):
         today = date.today()
         for product in self:
