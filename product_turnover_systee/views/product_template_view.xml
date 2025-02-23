@@ -18,6 +18,11 @@
                         <field name="predicted_daily_sales"/>
                         <field name="sales_period_days"/>
                     </group>
+                    <group>
+                        <field name="fastest_lead_delay"/>
+                        <field name="fsbnp"/>
+                        <field name="forecasted_with_sales"/>
+                    </group>
                 </page>
             </xpath>
         </field>
