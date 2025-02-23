@@ -5,8 +5,8 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class ProductProduct(models.Model):
-    _inherit = "product.product"
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
 
     avg_daily_sales = fields.Float(string="Average Daily Sales", compute="_compute_sales_metrics", store=True)
     median_daily_sales = fields.Float(string="Median Daily Sales (All Days)", compute="_compute_sales_metrics", store=True)
@@ -17,7 +17,7 @@ class ProductProduct(models.Model):
     @api.depends('sales_period_days')
     def _compute_sales_metrics(self):
         for product in self:
-            domain = [('product_id', '=', product.id), ('state', 'in', ['sale', 'done'])]
+            domain = [('product_id.product_tmpl_id', '=', product.id), ('state', 'in', ['sale', 'done'])]
             orders = self.env['sale.order.line'].search(domain)
             
             today = date.today()

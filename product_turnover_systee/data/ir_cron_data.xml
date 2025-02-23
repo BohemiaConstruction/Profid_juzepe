@@ -2,9 +2,9 @@
 <odoo>
     <record id="ir_cron_compute_product_turnover" model="ir.cron">
         <field name="name">Compute Product Turnover</field>
-        <field name="model_id" ref="product.model_product_product"/>
+        <field name="model_id" ref="product.model_product_template"/>
         <field name="state">code</field>
-        <field name="code">env['product.turnover.cron'].compute_product_turnover()</field>
+        <field name="code">env['product.template']._compute_sales_metrics()</field>
         <field name="interval_type">days</field>
         <field name="interval_number">1</field>
         <field name="numbercall">-1</field>
