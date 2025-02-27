@@ -17,6 +17,7 @@ class MailMessage(models.Model):
 
     @api.model_create_multi
     def create(self, values_list):
+        apply_rule = False  # Výchozí inicializace
     apply_rule = False  # Výchozí inicializace
         for values in values_list:
             author_partner_id = values.get('author_id', False)
