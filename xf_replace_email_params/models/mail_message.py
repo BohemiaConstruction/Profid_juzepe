@@ -17,6 +17,12 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         for values in values_list:
+            author_partner_id = values.get('author_id', False)
+            model = values.get('model', False)
+            user = self.get_author_user(author_partner_id)
+            company = user and user.company_id
+            internal_user = user and user.has_group('base.group_user')
+
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
@@ -48,7 +54,7 @@ class MailMessage(models.Model):
                                 continue
                         else:
                             _logger.info(f"Filter matched, updating emails for: {values}")
-                            email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(values.get('model'), self.env.company, self.env.user.has_group('base.group_user'))
+                            email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(model, company, internal_user)
                             if email_from:
                                 values.update({'email_from': email_from})
                             if reply_to is not None:
@@ -59,7 +65,7 @@ class MailMessage(models.Model):
                         continue
 
             if apply_rule:
-                # 🔹 Filtrace podle velikosti příloh (VRÁCENO PŮVODNÍ)
+                # 🔹 Filtrace podle velikosti příloh
                 if rule.min_attachment_size:
                     attachment_ids = []
                     for command in values.get('attachment_ids', []):
