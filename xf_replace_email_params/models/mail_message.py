@@ -44,15 +44,19 @@ class MailMessage(models.Model):
                         if 'res_id' in values and values.get('model'):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
-                                # 🔹 Převedeme Many2one pole na ID
-                                simplified_record_values = {
-                                    field: (getattr(related_record, field).id if isinstance(getattr(related_record, field), models.BaseModel) else getattr(related_record, field))
-                                    for field in filter_condition if hasattr(related_record, field)
-                                }
+                                simplified_record_values = {}
+                                for condition in filter_condition:
+                                    if isinstance(condition, (list, tuple)) and len(condition) >= 2:
+                                        field = condition[0]
+                                        if isinstance(field, str) and hasattr(related_record, field):
+                                            value = getattr(related_record, field)
+                                            if isinstance(value, models.BaseModel):
+                                                value = value.id  # Extract Many2one ID
+                                            simplified_record_values[field] = value
                                 
                                 _logger.info(f"Checking record ID {related_record.id} with simplified values: {simplified_record_values}")
 
-                                if not self.env[values.get('model')].sudo().search([('id', '=', related_record.id)] + filter_condition):
+                                if not related_record.sudo().filtered_domain(filter_condition):
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
