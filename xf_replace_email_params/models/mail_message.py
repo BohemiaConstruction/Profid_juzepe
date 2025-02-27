@@ -55,28 +55,36 @@ class MailMessage(models.Model):
                                 
                                 _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
                                 
-                                # Manuální kontrola `not in` a dalších operátorů
+                                # Manuální kontrola podmínky
                                 condition_matched = True
                                 for field, operator, value in filter_condition:
                                     field_value = record_values.get(field)
 
+                                    # Podrobné logování pro lepší debugování
+                                    _logger.info(f"Evaluating condition: {field} {operator} {value} (Record value: {field_value})")
+
                                     if operator == 'not in':
                                         if field_value in value:
+                                            _logger.info(f"Condition FAILED: {field_value} is in {value}, skipping update.")
                                             condition_matched = False
                                     elif operator == 'in':
                                         if field_value not in value:
+                                            _logger.info(f"Condition FAILED: {field_value} is not in {value}, skipping update.")
                                             condition_matched = False
                                     elif operator == '=':
                                         if field_value != value:
+                                            _logger.info(f"Condition FAILED: {field_value} != {value}, skipping update.")
                                             condition_matched = False
                                     elif operator in ('!=', '<>'):
                                         if field_value == value:
+                                            _logger.info(f"Condition FAILED: {field_value} == {value}, skipping update.")
                                             condition_matched = False
                                 
                                 if not condition_matched:
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
+                                    _logger.info("Condition PASSED. Applying update.")
                                     apply_rule = True
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
