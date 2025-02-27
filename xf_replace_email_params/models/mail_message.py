@@ -45,7 +45,10 @@ class MailMessage(models.Model):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
                                 if not related_record.sudo().filtered_domain(filter_condition):
-                                    _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
+                                    _logger.info(f"Domain filter {filter_condition} did not match.  Skipping update.")
+                                    _logger.info(f"Checking record ID {related_record.id} for domain filter {filter_condition}")
+                                    _logger.info(f"Record values: {related_record.read(['team_id'])}")
+
                                     continue
                                 else:
                                     apply_rule = True
