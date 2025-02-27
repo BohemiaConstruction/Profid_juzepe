@@ -18,12 +18,7 @@
     | replace sender
     | overwrite sender
     """,
-    'author': 'XFanis',
-    'support': 'xfanis.dev@gmail.com',
-    'website': 'https://xfanis.dev/odoo.html',
-    'license': 'OPL-1',
-    'price': 15,
-    'currency': 'EUR',
+    'author': 'Systee s.r.o. (https://www.systee.cz)',
     'description': """
     This module helps to replace/overwrite email_from and reply_to parameters of outgoing emails and notifications.
     After module installation you can customize email from and reply to options.

@@ -42,6 +42,7 @@
                         </group>
                         <group>
                             <field name="only_for_internal_users"/>
+                            <field name="discard_message"/>
                             <div class="alert alert-warning" role="alert"
                                  invisible="only_for_internal_users" colspan="2">
                                 Please note that disabling this checkbox may lead to unexpected security consequences,

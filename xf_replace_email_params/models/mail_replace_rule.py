@@ -24,6 +24,12 @@ class MailReplaceRule(models.Model):
     min_attachment_size = fields.Integer(string="Minimum Attachment Size (bytes)",help="Attachments smaller than this size will be removed.")
     _name = 'mail.replace.rule'
     _description = 'Mail Replace Rule'
+
+    discard_message = fields.Boolean(
+        string="Discard Message",
+        help="If enabled, messages matching this rule will be discarded and not created.",
+        default=False
+    )
     _order = 'sequence'
     # Common Values
     sequence = fields.Integer(
