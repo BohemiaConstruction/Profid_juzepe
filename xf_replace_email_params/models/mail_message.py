@@ -58,14 +58,20 @@ class MailMessage(models.Model):
                                 # Manuální kontrola `not in` a dalších operátorů
                                 condition_matched = True
                                 for field, operator, value in filter_condition:
-                                    if operator == 'not in' and record_values.get(field) in value:
-                                        condition_matched = False
-                                    elif operator == 'in' and record_values.get(field) not in value:
-                                        condition_matched = False
-                                    elif operator == '=' and record_values.get(field) != value:
-                                        condition_matched = False
-                                    elif operator in ('!=', '<>') and record_values.get(field) == value:
-                                        condition_matched = False
+                                    field_value = record_values.get(field)
+
+                                    if operator == 'not in':
+                                        if field_value in value:
+                                            condition_matched = False
+                                    elif operator == 'in':
+                                        if field_value not in value:
+                                            condition_matched = False
+                                    elif operator == '=':
+                                        if field_value != value:
+                                            condition_matched = False
+                                    elif operator in ('!=', '<>'):
+                                        if field_value == value:
+                                            condition_matched = False
                                 
                                 if not condition_matched:
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
