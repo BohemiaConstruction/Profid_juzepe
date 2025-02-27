@@ -18,7 +18,6 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         apply_rule = False  # Výchozí inicializace
-    apply_rule = False  # Výchozí inicializace
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
@@ -26,7 +25,6 @@ class MailMessage(models.Model):
             company = user and user.company_id
             internal_user = user and user.has_group('base.group_user')
 
-        apply_rule = False  # Výchozí inicializace
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
