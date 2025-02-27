@@ -44,11 +44,16 @@ class MailMessage(models.Model):
                         if 'res_id' in values and values.get('model'):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
-                                if not related_record.sudo().filtered_domain(filter_condition):
-                                    _logger.info(f"Domain filter {filter_condition} did not match.  Skipping update.")
-                                    _logger.info(f"Checking record ID {related_record.id} for domain filter {filter_condition}")
-                                    _logger.info(f"Record values: {related_record.read(['team_id'])}")
+                                # 🔹 Převedeme Many2one pole na ID
+                                simplified_record_values = {
+                                    field: (getattr(related_record, field).id if isinstance(getattr(related_record, field), models.BaseModel) else getattr(related_record, field))
+                                    for field in filter_condition if hasattr(related_record, field)
+                                }
+                                
+                                _logger.info(f"Checking record ID {related_record.id} with simplified values: {simplified_record_values}")
 
+                                if not self.env[values.get('model')].sudo().search([('id', '=', related_record.id)] + filter_condition):
+                                    _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
                                     apply_rule = True
