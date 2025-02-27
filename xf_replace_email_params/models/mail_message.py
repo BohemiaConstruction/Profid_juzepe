@@ -16,16 +16,14 @@ class MailMessage(models.Model):
 
     @api.model_create_multi
     def create(self, values_list):
-        messages = super(MailMessage, self).create(values_list)
-        
-        for message in messages:
+        for values in values_list:
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
-                if rule.message_type_filter and rule.message_type_filter != message.message_type:
+                if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
 
                 # Pravidlo se aplikuje vždy, pokud je domain_filter prázdný
-                apply_rule = True
+                apply_rule = not rule.domain_filter
 
                 if rule.domain_filter:
                     try:
@@ -34,44 +32,55 @@ class MailMessage(models.Model):
                             _logger.warning("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
                             continue
 
-                        # Pokud existuje domain_filter, musí odpovídat, jinak pravidlo neplatí
-                        apply_rule = False  
                         for field, value in filter_condition.items():
-                            related_record = message.env[message.model].browse(message.res_id)
-                            field_value = getattr(related_record, field, None)
-                            if isinstance(field_value, models.BaseModel):
-                                field_value = field_value.id  
-                            if field_value == value:
-                                apply_rule = True
-                                break
+                            if 'res_id' in values:
+                                related_record = self.env[values.get('model')].browse(values.get('res_id'))
+                                field_value = getattr(related_record, field, None)
+                                if isinstance(field_value, models.BaseModel):
+                                    field_value = field_value.id  
+                                _logger.info(f"Checking {field} (value: {field_value}) against {value}")
+                                
+                                if field_value != value:
+                                    _logger.info(f"Field {field} does not match filter. Skipping update.")
+                                    break
+                            else:
+                                _logger.warning(f"res_id not found in values: {values}")
+                                continue
+                        else:
+                            _logger.info(f"Filter matched, updating emails for: {values}")
+                            email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(values.get('model'), self.env.company, self.env.user.has_group('base.group_user'))
+                            if email_from:
+                                values.update({'email_from': email_from})
+                            if reply_to is not None:
+                                values.update({'reply_to': reply_to})
 
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
                         continue
 
-                if apply_rule:
-                    # Aplikujeme změny emailu, pokud jsou nastavené
-                    email_from, reply_to = rule.email_from_computed, rule.reply_to_computed
-                    if email_from:
-                        message.sudo().write({'email_from': email_from})
-                    if reply_to:
-                        message.sudo().write({'reply_to': reply_to})
+            if apply_rule:
+                # 🔹 Filtrace podle velikosti příloh (VRÁCENO PŮVODNÍ)
+                if rule.min_attachment_size:
+                    attachment_ids = []
+                    for command in values.get('attachment_ids', []):
+                        if isinstance(command, (list, tuple)) and len(command) >= 3 and isinstance(command[2], list):
+                            attachment_ids.extend(command[2])  # Extrahujeme ID příloh
+                        elif isinstance(command, (list, tuple)) and command[0] == 4 and isinstance(command[1], int):
+                            attachment_ids.append(command[1])  # Přidání jednotlivých příloh
 
-                    # 🔹 Filtrace podle velikosti příloh
-                    if rule.min_attachment_size:
-                        attachment_ids = []
-                        for attachment in message.attachment_ids:
-                            if attachment.file_size < rule.min_attachment_size:
-                                _logger.info(f"Removing attachment {attachment.name} due to small size {attachment.file_size} < {rule.min_attachment_size}")
-                            else:
-                                attachment_ids.append(attachment.id)
+                    valid_attachments = []
+                    for attachment in self.env['ir.attachment'].browse(attachment_ids):
+                        if attachment.file_size >= rule.min_attachment_size:
+                            valid_attachments.append(attachment.id)
+                        else:
+                            _logger.info(f"Attachment {attachment.name} removed due to size {attachment.file_size} < {rule.min_attachment_size}")
 
-                        message.sudo().write({'attachment_ids': [(6, 0, attachment_ids)]})
+                    values['attachment_ids'] = [(6, 0, valid_attachments)]
 
-                    # Pokud je aktivní block_sending, zabráníme odeslání e-mailu
-                    if rule.block_sending:
-                        _logger.info(f"Blocking email sending for message: {message.id}")
-                        self.env['mail.mail'].search([('mail_message_id', '=', message.id)]).sudo().write({'state': 'cancel'})
+                # Pokud je aktivní block_sending, zabráníme odeslání e-mailu
+                if rule.block_sending:
+                    _logger.info(f"Blocking email sending for message with values: {values}")
+                    self.env['mail.mail'].search([('mail_message_id', '=', values.get('id'))]).sudo().write({'state': 'cancel'})
 
-        return messages
+        return super(MailMessage, self).create(values_list)
     
