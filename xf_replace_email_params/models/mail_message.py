@@ -44,9 +44,10 @@ class MailMessage(models.Model):
                         if 'res_id' in values and values.get('model'):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
-                                _logger.info(f"Checking record ID {related_record.id} against domain filter {filter_condition}")
+                                record_values = related_record.read()[0]  # Načtení hodnot záznamu
+                                _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
                                 
-                                if not self.env[values.get('model')].sudo().search_count(filter_condition):
+                                if not self.env[values.get('model')].sudo().search_count([('id', '=', related_record.id)] + filter_condition):
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
