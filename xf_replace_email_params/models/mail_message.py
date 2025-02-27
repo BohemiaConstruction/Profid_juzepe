@@ -25,6 +25,7 @@ class MailMessage(models.Model):
 
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
+                apply_rule = True  # ✅ Oprava: Inicializace apply_rule na True vždy na začátku pravidla
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
 
@@ -89,4 +90,3 @@ class MailMessage(models.Model):
                     self.env['mail.mail'].search([('mail_message_id', '=', values.get('id'))]).sudo().write({'state': 'cancel'})
 
         return super(MailMessage, self).create(values_list)
-    
