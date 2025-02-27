@@ -35,7 +35,5 @@
     "installable": True,
     "application": True,
     "qweb": [],
-}
-,
     "license": "LGPL-3",
 }
