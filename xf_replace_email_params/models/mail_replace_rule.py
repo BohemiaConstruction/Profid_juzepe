@@ -25,6 +25,12 @@ class MailReplaceRule(models.Model):
     _name = 'mail.replace.rule'
     _description = 'Mail Replace Rule'
 
+    block_sending = fields.Boolean(
+        string="Block Sending",
+        help="If enabled, emails matching this rule will be created but not sent.",
+        default=False
+    )
+
     discard_message = fields.Boolean(
         string="Discard Message",
         help="If enabled, messages matching this rule will be discarded and not created.",
