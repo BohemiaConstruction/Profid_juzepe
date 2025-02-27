@@ -37,23 +37,18 @@ class MailMessage(models.Model):
                 if rule.domain_filter:
                     try:
                         filter_condition = eval(rule.domain_filter)
-                        if not isinstance(filter_condition, dict):
-                            _logger.warning("Domain filter must be a valid dictionary, e.g., {'support_team': 1}")
+                        if not isinstance(filter_condition, list):
+                            _logger.warning("Domain filter must be a valid Odoo domain list, e.g., [('support_team', '=', 1)]")
                             continue
-
-                        for field, expected_value in filter_condition.items():
-                            if 'res_id' in values:
-                                related_record = self.env[values.get('model')].browse(values.get('res_id'))
-                                actual_value = getattr(related_record, field, None)
-                                if isinstance(actual_value, models.BaseModel):
-                                    actual_value = actual_value.id
-                                _logger.info(f"Checking {field} (value: {actual_value}) against {expected_value}")
-                                
-                                if actual_value != expected_value:
-                                    _logger.info(f"Field {field} does not match filter. Skipping update.")
-                                    break
-                        else:
-                            apply_rule = True
+                        
+                        if 'res_id' in values and values.get('model'):
+                            related_record = self.env[values.get('model')].browse(values.get('res_id'))
+                            if related_record and related_record.exists():
+                                if not related_record.sudo().filtered_domain(filter_condition):
+                                    _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
+                                    continue
+                                else:
+                                    apply_rule = True
                     except Exception as e:
                         _logger.error(f"Error applying filter: {e}")
                         continue
