@@ -2,7 +2,7 @@
 
 {
     'name': 'Replace email_from and reply_to',
-    'version': '1.1.4',
+    'version': '1.1.5',
     'category': 'Productivity,Discuss,Extra Tools',
     'summary': """
     Replace "Email From" and "Reply To" parameters in emails
@@ -35,4 +35,7 @@
     'installable': True,
     'application': True,
     'qweb': [],
+}
+,
+    'license': 'LGPL-3',
 }
