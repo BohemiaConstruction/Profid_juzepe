@@ -48,7 +48,6 @@ class MailMessage(models.Model):
                         _logger.error(f"Error applying filter: {e}")
                         continue
 
-                # Pokud pravidlo platí, aplikujeme změny emailu
                 if apply_rule:
                     email_from, reply_to = rule.email_from_computed, rule.reply_to_computed
                     if email_from:
@@ -56,10 +55,10 @@ class MailMessage(models.Model):
                     if reply_to:
                         message.sudo().write({'reply_to': reply_to})
 
-                    # Pokud je aktivní block_sending, zpráva nebude odeslána
+                    # Místo změny state na mail.message zajistíme, že žádný e-mail nebude vytvořen
                     if rule.block_sending:
                         _logger.info(f"Blocking email sending for message: {message.id}")
-                        message.sudo().write({'state': 'cancel'})
+                        self.env['mail.mail'].search([('mail_message_id', '=', message.id)]).sudo().write({'state': 'cancel'})
 
         return messages
     
