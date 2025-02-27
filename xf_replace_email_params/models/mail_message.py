@@ -56,7 +56,8 @@ class MailMessage(models.Model):
                                 
                                 _logger.info(f"Checking record ID {related_record.id} with simplified values: {simplified_record_values}")
 
-                                if not related_record.sudo().filtered_domain(filter_condition):
+                                # 🔹 Použijeme search_count pro přesné ověření filtru
+                                if not self.env[values.get('model')].sudo().search_count([('id', '=', related_record.id)] + filter_condition):
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
