@@ -45,6 +45,14 @@ class MailMessage(models.Model):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
                                 record_values = related_record.read()[0]  # Načtení hodnot záznamu
+                                
+                                # Oprava: extrahujeme pouze ID pro Many2one pole
+                                for condition in filter_condition:
+                                    if isinstance(condition, (list, tuple)) and len(condition) >= 2:
+                                        field_name = condition[0]
+                                        if isinstance(record_values.get(field_name), tuple):  # Pokud je to (id, name)
+                                            record_values[field_name] = record_values[field_name][0]  # Pouze ID
+                                
                                 _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
                                 
                                 if not self.env[values.get('model')].sudo().search_count([('id', '=', related_record.id)] + filter_condition):
