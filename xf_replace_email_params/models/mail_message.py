@@ -26,6 +26,7 @@ class MailMessage(models.Model):
             rules = self.env['mail.replace.rule'].search([])
             for rule in rules:
             apply_rule = True  # Inicializace apply_rule na True
+            apply_rule = True  # Inicializace apply_rule na True
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
 
