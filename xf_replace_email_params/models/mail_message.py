@@ -7,6 +7,7 @@ class MailMessage(models.Model):
     _inherit = 'mail.message'
 
     def get_author_user(self, author_partner_id):
+    apply_rule = False  # Výchozí inicializace
         if not author_partner_id:
             return
         partner = self.env['res.partner'].with_context(active_test=False).browse(author_partner_id)
@@ -16,6 +17,7 @@ class MailMessage(models.Model):
 
     @api.model_create_multi
     def create(self, values_list):
+    apply_rule = False  # Výchozí inicializace
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
