@@ -5,7 +5,7 @@ from odoo.exceptions import ValidationError
 class MailReplaceRule(models.Model):
     domain_filter = fields.Char(
         string="Domain Filter",
-        help="Filter criteria for applying the rule, e.g., {'support_team': 1}, {'user_id': 5}."
+        help="Filter criteria for applying the rule, e.g., ['&', ('team_id', 'not in', [1, 2, 3]), '|', ('priority', '=', 'high'), ('company_id', '=', 1)]."
     )
 
     message_type_filter = fields.Selection(
@@ -28,12 +28,6 @@ class MailReplaceRule(models.Model):
     block_sending = fields.Boolean(
         string="Block Sending",
         help="If enabled, emails matching this rule will be created but not sent.",
-        default=False
-    )
-
-    discard_message = fields.Boolean(
-        string="Discard Message",
-        help="If enabled, messages matching this rule will be discarded and not created.",
         default=False
     )
     _order = 'sequence'
