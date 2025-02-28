@@ -14,11 +14,11 @@ class MailMail(models.Model):
                 rules = self.env["mail.replace.rule"].search([])
 
                 for rule in rules:
-                    # Kontrolujeme, zda bylo pravidlo uplatněno už v mail.message
-                    if getattr(message, "apply_rule", True):  # Používáme flag z mail.message
-                        if rule.block_sending:
-                            _logger.info(f"Blocking email sending for mail: {values.get('mail_message_id')}")
-                            values["state"] = "cancel"  # Zrušíme e-mail
-                            break  # Ukončíme kontrolu, protože blokování je dostatečné
+                    # NEAPLIKUJEME domain_filter zde, protože už byl aplikován v mail.message
+
+                    if rule.block_sending:
+                        _logger.info(f"Blocking email sending for mail: {values.get('mail_message_id')}")
+                        values["state"] = "cancel"  # Zrušíme e-mail
+                        break  # Ukončíme kontrolu, protože blokování je dostatečné
 
         return super(MailMail, self).create(values_list)
