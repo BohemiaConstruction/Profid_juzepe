@@ -38,49 +38,60 @@ class MailMessage(models.Model):
                     try:
                         filter_condition = eval(rule.domain_filter)
                         if not isinstance(filter_condition, list):
-                            _logger.warning("Domain filter must be a valid Odoo domain list, e.g., [('support_team', '=', 1)]")
+                            _logger.warning("Domain filter must be a valid Odoo domain list.")
                             continue
                         
                         if 'res_id' in values and values.get('model'):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
                                 record_values = related_record.read()[0]  # Načtení hodnot záznamu
-                                
+
                                 # Oprava: extrahujeme pouze ID pro Many2one pole
                                 for condition in filter_condition:
                                     if isinstance(condition, (list, tuple)) and len(condition) >= 2:
                                         field_name = condition[0]
-                                        if isinstance(record_values.get(field_name), tuple):  # Pokud je to (id, name)
-                                            record_values[field_name] = record_values[field_name][0]  # Pouze ID
-                                
+                                        if isinstance(record_values.get(field_name), tuple):
+                                            record_values[field_name] = record_values[field_name][0]
+
                                 _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
                                 
-                                # Manuální kontrola podmínky
-                                condition_matched = True
-                                for field, operator, value in filter_condition:
-                                    field_value = record_values.get(field)
+                                # Podpora pro OR a AND v Odoo filtrech
+                                def evaluate_conditions(conditions, record):
+                                    stack = []
+                                    last_operator = None
+                                    for condition in conditions:
+                                        if condition == '|':  # OR logika
+                                            last_operator = 'or'
+                                        elif condition == '&':  # AND logika
+                                            last_operator = 'and'
+                                        elif isinstance(condition, (list, tuple)) and len(condition) >= 2:
+                                            field, operator, value = condition
+                                            field_value = record.get(field)
 
-                                    # Podrobné logování pro lepší debugování
-                                    _logger.info(f"Evaluating condition: {field} {operator} {value} (Record value: {field_value})")
+                                            _logger.info(f"Evaluating condition: {field} {operator} {value} (Record value: {field_value})")
 
-                                    if operator == 'not in':
-                                        if field_value in value:
-                                            _logger.info(f"Condition FAILED: {field_value} is in {value}, skipping update.")
                                             condition_matched = False
-                                    elif operator == 'in':
-                                        if field_value not in value:
-                                            _logger.info(f"Condition FAILED: {field_value} is not in {value}, skipping update.")
-                                            condition_matched = False
-                                    elif operator == '=':
-                                        if field_value != value:
-                                            _logger.info(f"Condition FAILED: {field_value} != {value}, skipping update.")
-                                            condition_matched = False
-                                    elif operator in ('!=', '<>'):
-                                        if field_value == value:
-                                            _logger.info(f"Condition FAILED: {field_value} == {value}, skipping update.")
-                                            condition_matched = False
-                                
-                                if not condition_matched:
+                                            if operator == 'not in':
+                                                condition_matched = field_value not in value
+                                            elif operator == 'in':
+                                                condition_matched = field_value in value
+                                            elif operator == '=':
+                                                condition_matched = field_value == value
+                                            elif operator in ('!=', '<>'):
+                                                condition_matched = field_value != value
+
+                                            if last_operator == 'or':
+                                                stack[-1] = stack[-1] or condition_matched
+                                            elif last_operator == 'and':
+                                                stack[-1] = stack[-1] and condition_matched
+                                            else:
+                                                stack.append(condition_matched)
+
+                                            last_operator = None
+
+                                    return all(stack) if stack else True
+
+                                if not evaluate_conditions(filter_condition, record_values):
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
                                     continue
                                 else:
@@ -102,9 +113,9 @@ class MailMessage(models.Model):
                         attachment_ids = []
                         for command in values.get('attachment_ids', []):
                             if isinstance(command, (list, tuple)) and len(command) >= 3 and isinstance(command[2], list):
-                                attachment_ids.extend(command[2])  # Extrahujeme ID příloh
+                                attachment_ids.extend(command[2])
                             elif isinstance(command, (list, tuple)) and command[0] == 4 and isinstance(command[1], int):
-                                attachment_ids.append(command[1])  # Přidání jednotlivých příloh
+                                attachment_ids.append(command[1])
 
                         valid_attachments = []
                         for attachment in self.env['ir.attachment'].browse(attachment_ids):
