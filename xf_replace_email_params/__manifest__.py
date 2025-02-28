@@ -2,21 +2,10 @@
 
 {
     'name': 'Replace email_from and reply_to',
-    'version': '1.1.5',
+    'version': '1.1.6',
     'category': 'Productivity,Discuss,Extra Tools',
     'summary': """
     Replace "Email From" and "Reply To" parameters in emails
-    | replace email from
-    | replace reply to
-    | substitute email_from
-    | substitute reply_to
-    | overwrite email_from
-    | overwrite reply_to
-    | custom email_from
-    | custom reply_to
-    | replace email sender
-    | replace sender
-    | overwrite sender
     """,
     'author': 'Systee s.r.o. (https://www.systee.cz)',
     'description': """
