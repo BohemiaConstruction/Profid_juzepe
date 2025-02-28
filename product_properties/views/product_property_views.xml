@@ -28,22 +28,9 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
-            <notebook position="inside">
-                <page string="Technical Properties">
-                    <field name="property_ids">
-                        <tree editable="bottom">
-                            <field name="category_id"/>
-                            <field name="part_number"/>
-                            <field name="value"/>
-                            <field name="unit"/>
-                            <field name="voltage_rating_vdc"/>
-                            <field name="dielectric"/>
-                            <field name="tolerance"/>
-                            <field name="footprint"/>
-                        </tree>
-                    </field>
-                </page>
-            </notebook>
+            <group position="inside">
+                <field name="property_id"/>
+            </group>
         </field>
     </record>
 </odoo>
