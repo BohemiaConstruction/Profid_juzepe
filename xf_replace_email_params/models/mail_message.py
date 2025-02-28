@@ -93,7 +93,7 @@ class MailMessage(models.Model):
 
                                 if not evaluate_conditions(filter_condition, record_values):
                                     _logger.info(f"Domain filter {filter_condition} did not match. Skipping update.")
-                                    continue
+                                    apply_rule = False
                                 else:
                                     _logger.info("Condition PASSED. Applying update.")
                                     apply_rule = True
@@ -126,8 +126,8 @@ class MailMessage(models.Model):
 
                         values['attachment_ids'] = [(6, 0, valid_attachments)]
 
-                    # Blokování odeslání zprávy
-                    if rule.block_sending:
+                    # Blokování odeslání zprávy pouze pokud pravidlo prošlo
+                    if apply_rule and rule.block_sending:
                         _logger.info(f"Blocking email sending for message with values: {values}")
                         self.env['mail.mail'].search([('mail_message_id', '=', values.get('id'))]).sudo().write({'state': 'cancel'})
             
