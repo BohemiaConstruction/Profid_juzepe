@@ -29,4 +29,4 @@ class ProductProperty(models.Model):
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    property_id = fields.One2one('product.property', string='Technical Properties', ondelete='cascade')
+    property_id = fields.Many2one('product.property', string='Technical Properties', ondelete='cascade')
