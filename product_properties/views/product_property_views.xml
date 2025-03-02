@@ -8,7 +8,7 @@
             <notebook position="inside">
                 <page string="Properties">
                     <group>
-                        <field name="property_category_id"/>
+                        <field name="category_id"/>
                         <field name="part_number"/>
                         <field name="value"/>
                         <field name="unit"/>
