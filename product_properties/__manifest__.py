@@ -1,8 +1,8 @@
 {
-    'name': 'Product Properties Form',
-    'version': '1.0',
+    'name': 'Product Properties Fixed',
+    'version': '1.1',
     'category': 'Product',
-    'summary': 'Adds technical properties form to products',
+    'summary': 'Adds technical properties tab to products',
     'author': 'Custom Developer',
     'depends': ['product'],
     'data': [
