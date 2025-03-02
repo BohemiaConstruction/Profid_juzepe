@@ -3,7 +3,6 @@ from odoo import models, fields
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    pp_category_id = fields.Many2one('product.property.category', string='PP Property Category')
     pp_part_number = fields.Char(string='PP Part Number', required=True)
     pp_value = fields.Float(string='PP Value', required=True)
     pp_unit = fields.Selection([

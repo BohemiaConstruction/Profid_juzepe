@@ -8,12 +8,11 @@
             <notebook position="inside">
                 <page string="Properties">
                     <group>
-                        <field name="pp_category_id"/>
                         <field name="pp_part_number"/>
                         <field name="pp_value"/>
                         <field name="pp_unit"/>
                         <field name="pp_voltage_rating_vdc"/>
-                        <field name="pp_dielectric"/>
+                        <field name="ppdielectric"/>
                         <field name="pp_tolerance"/>
                         <field name="pp_footprint"/>
                         <field name="pp_note"/>
