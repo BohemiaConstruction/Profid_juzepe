@@ -10,9 +10,5 @@
     ],
     'installable': True,
     'application': False,
-    'post_init_hook': 'cleanup_database_hook'
+    'post_init_hook': 'hooks.cleanup_database_hook'
 }
-
-def cleanup_database_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    env['cleanup.database'].run_cleanup()
