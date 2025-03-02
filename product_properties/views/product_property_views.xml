@@ -13,7 +13,7 @@
                         <field name="pp_value"/>
                         <field name="pp_unit"/>
                         <field name="pp_voltage_rating_vdc"/>
-                        <field name="ppdielectric"/>
+                        <field name="pp_dielectric"/>
                         <field name="pp_tolerance"/>
                         <field name="pp_footprint"/>
                         <field name="pp_note"/>

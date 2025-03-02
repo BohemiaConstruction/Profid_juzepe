@@ -1,14 +1,13 @@
 {
-    'name': 'Product Properties Fixed',
-    'version': '1.1',
+    'name': 'Product Properties Simplified',
+    'version': '1.3',
     'category': 'Product',
-    'summary': 'Adds technical properties tab to products',
+    'summary': 'Adds technical properties to products without extra scripts',
     'author': 'Custom Developer',
     'depends': ['product'],
     'data': [
-        'security/ir.model.access.csv',
         'views/product_property_views.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': False
 }
