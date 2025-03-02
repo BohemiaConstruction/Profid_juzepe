@@ -9,32 +9,18 @@
                 <page string="Properties">
                     <group>
                         <field name="property_id"/>
+                        <field name="property_id.category_id"/>
+                        <field name="property_id.part_number"/>
+                        <field name="property_id.value"/>
+                        <field name="property_id.unit"/>
+                        <field name="property_id.voltage_rating_vdc"/>
+                        <field name="property_id.dielectric"/>
+                        <field name="property_id.tolerance"/>
+                        <field name="property_id.footprint"/>
+                        <field name="property_id.note"/>
                     </group>
                 </page>
             </notebook>
-        </field>
-    </record>
-
-    <record id="view_product_property_form" model="ir.ui.view">
-        <field name="name">product.property.form</field>
-        <field name="model">product.property</field>
-        <field name="arch" type="xml">
-            <form string="Product Property">
-                <sheet>
-                    <group>
-                        <field name="product_tmpl_id"/>
-                        <field name="category_id"/>
-                        <field name="part_number"/>
-                        <field name="value"/>
-                        <field name="unit"/>
-                        <field name="voltage_rating_vdc"/>
-                        <field name="dielectric"/>
-                        <field name="tolerance"/>
-                        <field name="footprint"/>
-                        <field name="note"/>
-                    </group>
-                </sheet>
-            </form>
         </field>
     </record>
 </odoo>
