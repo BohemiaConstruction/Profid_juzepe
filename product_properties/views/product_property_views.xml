@@ -8,16 +8,15 @@
             <notebook position="inside">
                 <page string="Properties">
                     <group>
-                        <field name="property_id"/>
-                        <field name="property_id.category_id"/>
-                        <field name="property_id.part_number"/>
-                        <field name="property_id.value"/>
-                        <field name="property_id.unit"/>
-                        <field name="property_id.voltage_rating_vdc"/>
-                        <field name="property_id.dielectric"/>
-                        <field name="property_id.tolerance"/>
-                        <field name="property_id.footprint"/>
-                        <field name="property_id.note"/>
+                        <field name="property_category_id"/>
+                        <field name="part_number"/>
+                        <field name="value"/>
+                        <field name="unit"/>
+                        <field name="voltage_rating_vdc"/>
+                        <field name="dielectric"/>
+                        <field name="tolerance"/>
+                        <field name="footprint"/>
+                        <field name="note"/>
                     </group>
                 </page>
             </notebook>
