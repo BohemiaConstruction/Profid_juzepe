@@ -1,14 +1,14 @@
 {
-    'name': 'Product Properties Fixed Corrected',
-    'version': '1.2',
+    'name': 'Product Properties Fixed',
+    'version': '1.1',
     'category': 'Product',
-    'summary': 'Adds technical properties to products and removes database duplicates',
+    'summary': 'Adds technical properties tab to products',
     'author': 'Custom Developer',
     'depends': ['product'],
     'data': [
+        'security/ir.model.access.csv',
         'views/product_property_views.xml',
     ],
     'installable': True,
     'application': False,
-    'post_init_hook': 'hooks.cleanup_database_hook'
 }

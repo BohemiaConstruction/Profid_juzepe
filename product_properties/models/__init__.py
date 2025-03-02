@@ -1,1 +1,1 @@
-from . import product_template, cleanup_script
+from . import product_template
