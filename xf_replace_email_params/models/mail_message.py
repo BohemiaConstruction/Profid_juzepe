@@ -23,7 +23,7 @@ class MailMessage(models.Model):
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
             user = self.get_author_user(author_partner_id)
-            company = user and user.company_id
+            company = user.company_id if user else self.env.company
             internal_user = user and user.has_group('base.group_user')
             message_type = values.get('message_type', '')
             rules = self.env['mail.replace.rule'].search([
