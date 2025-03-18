@@ -105,7 +105,7 @@ class MailMessage(models.Model):
                         _logger.error(f"Error applying filter: {e}")
                         continue
 
-                if apply_rule and rule::
+                if apply_rule and rule:
                     if rule.email_from_computed:
                         values.update({'email_from': rule.email_from_computed})
                     if rule.reply_to_computed:
