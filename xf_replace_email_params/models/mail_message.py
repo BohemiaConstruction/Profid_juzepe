@@ -29,7 +29,8 @@ class MailMessage(models.Model):
             rules = self.env['mail.replace.rule'].search([
                 ('model', '=', model),
                 ('company_id', '=', company.id),
-                ('only_for_internal_users', '=', internal_user)
+                ('only_for_internal_users', '=', internal_user),
+                ('message_type_filter', '=', message_type)
             ])
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
@@ -104,12 +105,11 @@ class MailMessage(models.Model):
                         _logger.error(f"Error applying filter: {e}")
                         continue
 
-                if apply_rule:
-                    email_from, reply_to = self.env['mail.replace.rule'].get_email_from_reply_to(model, company, internal_user)
-                    if email_from:
-                        values.update({'email_from': email_from})
-                    if reply_to is not None:
-                        values.update({'reply_to': reply_to})
+                if apply_rule and rule::
+                    if rule.email_from_computed:
+                        values.update({'email_from': rule.email_from_computed})
+                    if rule.reply_to_computed:
+                        values.update({'reply_to': rule.reply_to_computed})
 
                     # Filtrace podle velikosti příloh
                     if rule.min_attachment_size:
