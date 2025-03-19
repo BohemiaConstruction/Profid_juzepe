@@ -151,6 +151,7 @@ class MailMessage(models.Model):
             new_values_list.append(values)
         _logger.info(f"XXX Blocking email sending for messages: {block_messages}")
         messages = super(MailMessage, self).create(new_values_list)
+        self.env.cr.commit()
         mails_to_cancel = self.env['mail.mail'].search([
             ('mail_message_id', 'in', list(block_messages)),
             ('state', '=', 'outgoing'),
