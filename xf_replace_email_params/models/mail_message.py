@@ -18,6 +18,7 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
+        block_messages = []
 
         for values in values_list:
             author_partner_id = values.get('author_id', False)
@@ -117,6 +118,8 @@ class MailMessage(models.Model):
                     if rule.reply_to_computed and not reply_to_set:
                         final_reply_to = rule.reply_to_computed
                         reply_to_set = True
+                    if rule.block_sending:
+                        block_sending = True
 
                     if rule.min_attachment_size:
                         attachment_ids = []
