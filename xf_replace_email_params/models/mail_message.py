@@ -18,7 +18,7 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-        block_messages = []
+        block_messages = set()
 
         for values in values_list:
             author_partner_id = values.get('author_id', False)
@@ -27,6 +27,7 @@ class MailMessage(models.Model):
             company = user.company_id if user else self.env.company
             internal_user = user and user.has_group('base.group_user')
             message_type = values.get('message_type', '')
+            subtype_id = values.get('subtype_id', False)
             rules = self.env['mail.replace.rule'].search([
                 ('model', '=', model),
                 ('company_id', '=', company.id),
@@ -38,7 +39,6 @@ class MailMessage(models.Model):
             final_reply_to = None
             email_from_set = False
             reply_to_set = False
-            block_sending = False
 
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
@@ -64,7 +64,7 @@ class MailMessage(models.Model):
                                         if isinstance(record_values.get(field_name), tuple):
                                             record_values[field_name] = record_values[field_name][0]
 
-                                _logger.info(f"Checking record ID {related_record.id} against domain filter {filter_condition}")
+                                _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
 
                                 def evaluate_conditions(conditions, record):
                                     stack = []
@@ -119,7 +119,7 @@ class MailMessage(models.Model):
                         final_reply_to = rule.reply_to_computed
                         reply_to_set = True
                     if rule.block_sending:
-                        block_sending = True
+                        block_messages.add(values.get('id'))
 
                     if rule.min_attachment_size:
                         attachment_ids = []
@@ -142,14 +142,16 @@ class MailMessage(models.Model):
                 values['email_from'] = final_email_from
             if final_reply_to:
                 values['reply_to'] = final_reply_to
-            if block_sending:
-                block_messages.append(values.get('id'))
-            _logger.info(f"Update with new values FROM {final_email_from} and REPLY {final_reply_to}")
+
             new_values_list.append(values)
 
         messages = super(MailMessage, self).create(new_values_list)
         if block_messages:
-            mails_to_cancel = self.env['mail.mail'].search([('mail_message_id', 'in', block_messages)])
+            mails_to_cancel = self.env['mail.mail'].search([
+                ('mail_message_id', 'in', list(block_messages)),
+                ('auto_delete', '=', False),  # Zabránění zrušení interních notifikací
+                ('email_to', '!=', False)  # Pouze pro zprávy skutečně určené k externímu odeslání
+            ])
             if mails_to_cancel:
                 mails_to_cancel.sudo().write({'state': 'cancel'})
                 _logger.info(f"Blocking email sending for messages: {block_messages}")
