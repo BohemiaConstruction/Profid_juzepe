@@ -144,7 +144,7 @@ class MailMessage(models.Model):
                 values['reply_to'] = final_reply_to
 
             new_values_list.append(values)
-
+        _logger.info(f"XXX Blocking email sending for messages: {block_messages}")
         messages = super(MailMessage, self).create(new_values_list)
         if block_messages:
             mails_to_cancel = self.env['mail.mail'].search([
