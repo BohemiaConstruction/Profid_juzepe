@@ -62,7 +62,7 @@ class MailMessage(models.Model):
                                         if isinstance(record_values.get(field_name), tuple):
                                             record_values[field_name] = record_values[field_name][0]
 
-                                _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
+                                _logger.info(f"Checking record ID {related_record.id} against domain filter {filter_condition}")
 
                                 def evaluate_conditions(conditions, record):
                                     stack = []
@@ -138,7 +138,7 @@ class MailMessage(models.Model):
                 values['email_from'] = final_email_from
             if final_reply_to:
                 values['reply_to'] = final_reply_to
-
+            _logger.info("Update with values: {values}")
             new_values_list.append(values)
 
         return super(MailMessage, self).create(new_values_list)
