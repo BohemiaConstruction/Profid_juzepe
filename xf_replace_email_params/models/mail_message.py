@@ -154,7 +154,7 @@ class MailMessage(models.Model):
         self.env.cr.commit()
         mails_to_cancel = self.env['mail.mail'].search([
             ('mail_message_id', 'in', list(block_messages)),
-            ('state', '=', 'outgoing'),
+            ('state', 'in', ['outgoing', 'ready']),
             ('email_to', '!=', False)
         ])
         if not mails_to_cancel:
