@@ -37,6 +37,7 @@ class MailMessage(models.Model):
             final_reply_to = None
             email_from_set = False
             reply_to_set = False
+            block_sending = False
 
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
@@ -138,7 +139,16 @@ class MailMessage(models.Model):
                 values['email_from'] = final_email_from
             if final_reply_to:
                 values['reply_to'] = final_reply_to
+            if block_sending:
+                block_messages.append(values.get('id'))
             _logger.info(f"Update with new values FROM {final_email_from} and REPLY {final_reply_to}")
             new_values_list.append(values)
 
-        return super(MailMessage, self).create(new_values_list)
+        messages = super(MailMessage, self).create(new_values_list)
+        if block_messages:
+            mails_to_cancel = self.env['mail.mail'].search([('mail_message_id', 'in', block_messages)])
+            if mails_to_cancel:
+                mails_to_cancel.sudo().write({'state': 'cancel'})
+                _logger.info(f"Blocking email sending for messages: {block_messages}")
+        
+        return messages
