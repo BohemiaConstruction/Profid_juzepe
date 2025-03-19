@@ -12,6 +12,7 @@
     This module helps to replace/overwrite email_from and reply_to parameters of outgoing emails and notifications.
     After module installation you can customize email from and reply to options.
     """,
+    'license': 'Other proprietary',
     'depends': ['mail'],
     'data': [
         'security/ir.model.access.csv',

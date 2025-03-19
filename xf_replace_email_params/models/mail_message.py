@@ -32,6 +32,12 @@ class MailMessage(models.Model):
                 ('only_for_internal_users', '=', internal_user),
                 ('message_type_filter', '=', message_type)
             ])
+
+            final_email_from = None
+            final_reply_to = None
+            email_from_set = False
+            reply_to_set = False
+
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
@@ -48,9 +54,8 @@ class MailMessage(models.Model):
                         if 'res_id' in values and values.get('model'):
                             related_record = self.env[values.get('model')].browse(values.get('res_id'))
                             if related_record and related_record.exists():
-                                record_values = related_record.read()[0]  # Načtení hodnot záznamu
+                                record_values = related_record.read()[0]
 
-                                # Oprava: extrahujeme pouze ID pro Many2one pole
                                 for condition in filter_condition:
                                     if isinstance(condition, (list, tuple)) and len(condition) >= 2:
                                         field_name = condition[0]
@@ -59,14 +64,13 @@ class MailMessage(models.Model):
 
                                 _logger.info(f"Checking record ID {related_record.id} with values: {record_values} against domain filter {filter_condition}")
 
-                                # Podpora pro OR a AND v Odoo filtrech
                                 def evaluate_conditions(conditions, record):
                                     stack = []
                                     last_operator = None
                                     for condition in conditions:
-                                        if condition == '|':  # OR logika
+                                        if condition == '|':
                                             last_operator = 'or'
-                                        elif condition == '&':  # AND logika
+                                        elif condition == '&':
                                             last_operator = 'and'
                                         elif isinstance(condition, (list, tuple)) and len(condition) >= 2:
                                             field, operator, value = condition
@@ -106,12 +110,13 @@ class MailMessage(models.Model):
                         continue
 
                 if apply_rule and rule:
-                    if rule.email_from_computed:
-                        values.update({'email_from': rule.email_from_computed})
-                    if rule.reply_to_computed:
-                        values.update({'reply_to': rule.reply_to_computed})
+                    if rule.email_from_computed and not email_from_set:
+                        final_email_from = rule.email_from_computed
+                        email_from_set = True
+                    if rule.reply_to_computed and not reply_to_set:
+                        final_reply_to = rule.reply_to_computed
+                        reply_to_set = True
 
-                    # Filtrace podle velikosti příloh
                     if rule.min_attachment_size:
                         attachment_ids = []
                         for command in values.get('attachment_ids', []):
@@ -128,6 +133,11 @@ class MailMessage(models.Model):
                                 _logger.info(f"Attachment {attachment.name} removed due to size {attachment.file_size} < {rule.min_attachment_size}")
 
                         values['attachment_ids'] = [(6, 0, valid_attachments)]
+
+            if final_email_from:
+                values['email_from'] = final_email_from
+            if final_reply_to:
+                values['reply_to'] = final_reply_to
 
             new_values_list.append(values)
 
