@@ -119,7 +119,12 @@ class MailMessage(models.Model):
                         final_reply_to = rule.reply_to_computed
                         reply_to_set = True
                     if rule.block_sending:
-                        block_messages.add(values.get('id'))
+                        message_id = values.get('id')
+                        if message_id:
+                            block_messages.add(message_id)
+                            _logger.info(f"XXX Adding message ID {message_id} to block list")
+                        else:
+                            _logger.warning("XXX No message ID found for blocking!")
 
                     if rule.min_attachment_size:
                         attachment_ids = []
@@ -146,14 +151,15 @@ class MailMessage(models.Model):
             new_values_list.append(values)
         _logger.info(f"XXX Blocking email sending for messages: {block_messages}")
         messages = super(MailMessage, self).create(new_values_list)
-        if block_messages:
-            mails_to_cancel = self.env['mail.mail'].search([
-                ('mail_message_id', 'in', list(block_messages)),
-                ('auto_delete', '=', False),  # Zabránění zrušení interních notifikací
-                ('email_to', '!=', False)  # Pouze pro zprávy skutečně určené k externímu odeslání
-            ])
-            if mails_to_cancel:
-                mails_to_cancel.sudo().write({'state': 'cancel'})
-                _logger.info(f"Blocking email sending for messages: {block_messages}")
+        mails_to_cancel = self.env['mail.mail'].search([
+            ('mail_message_id', 'in', list(block_messages)),
+            ('state', '=', 'outgoing'),
+            ('email_to', '!=', False)
+        ])
+        if not mails_to_cancel:
+            _logger.warning("XXX No outgoing emails found to cancel!")
+        if mails_to_cancel:
+            mails_to_cancel.sudo().write({'state': 'cancel'})
+            _logger.info(f"XXX Blocking email sending for messages: {mails_to_cancel.mapped('mail_message_id')}")
         
         return messages
