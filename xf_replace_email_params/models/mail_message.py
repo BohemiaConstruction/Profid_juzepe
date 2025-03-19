@@ -138,7 +138,7 @@ class MailMessage(models.Model):
                 values['email_from'] = final_email_from
             if final_reply_to:
                 values['reply_to'] = final_reply_to
-            _logger.info(f"Update with values: {values}")
+            _logger.info(f"Update with new values FROM {final_email_from} and REPLY {final_reply_to}")
             new_values_list.append(values)
 
         return super(MailMessage, self).create(new_values_list)
