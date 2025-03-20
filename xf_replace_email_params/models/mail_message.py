@@ -29,7 +29,6 @@ class MailMessage(models.Model):
             subtype_id = values.get('subtype_id', False)
             rules = self.env['mail.replace.rule'].search([
                 ('model', '=', model),
-                ('only_for_internal_users', '=', internal_user),
                 ('message_type_filter', '=', message_type)
             ])
             _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, "
