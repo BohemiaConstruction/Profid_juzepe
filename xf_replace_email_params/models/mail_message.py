@@ -148,11 +148,12 @@ class MailMessage(models.Model):
         messages = super(MailMessage, self).create(new_values_list)
 
         #  **Blokování e-mailových notifikací (mail.notification)**
-        if blocked_notifications:
-            self.env['mail.notification'].search([
-                ('mail_message_id', 'in', list(blocked_notifications)),
-                ('notification_type', '=', 'email')
-            ]).sudo().unlink()
-            _logger.info(f"XXX Removed email notifications for messages: {blocked_notifications}")
+        for message in messages:
+            if message.id in blocked_messages:
+                self.env['mail.notification'].search([
+                    ('mail_message_id', '=', message.id),
+                    ('notification_type', '=', 'email')
+                ]).sudo().unlink()
+                _logger.info(f"XXX Removed email notifications for message_id: {message.id}")
         
         return messages
