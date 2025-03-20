@@ -27,7 +27,7 @@ class MailMessage(models.Model):
             internal_user = user and user.has_group('base.group_user')
             message_type = values.get('message_type', '')
             subtype_id = values.get('subtype_id', False)
-            if message_type == 'incoming':
+            if message_type == 'email':
                 rules = self.env['mail.replace.rule'].search([
                     ('model', '=', model),
                     ('message_type_filter', '=', message_type)
