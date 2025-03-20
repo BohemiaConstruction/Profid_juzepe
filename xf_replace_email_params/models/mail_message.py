@@ -18,7 +18,7 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-        block_messages = set()
+        blocked_notifications = set()
 
         for values in values_list:
             author_partner_id = values.get('author_id', False)
@@ -119,12 +119,8 @@ class MailMessage(models.Model):
                         final_reply_to = rule.reply_to_computed
                         reply_to_set = True
                     if rule.block_sending:
-                        message_id = values.get('id')
-                        if message_id:
-                            block_messages.add(message_id)
-                            _logger.info(f"XXX Adding message ID {message_id} to block list")
-                        else:
-                            _logger.warning("XXX No message ID found for blocking!")
+                        _logger.info(f"XXX Blocking email notifications for message_id {values.get('id')}")
+                        blocked_notifications.add(values.get('id'))
 
                     if rule.min_attachment_size:
                         attachment_ids = []
@@ -149,18 +145,14 @@ class MailMessage(models.Model):
                 values['reply_to'] = final_reply_to
 
             new_values_list.append(values)
-        _logger.info(f"XXX Blocking email sending for messages: {block_messages}")
         messages = super(MailMessage, self).create(new_values_list)
-        self.env.cr.commit()
-        mails_to_cancel = self.env['mail.mail'].search([
-            ('mail_message_id', 'in', list(block_messages)),
-            ('state', 'in', ['outgoing', 'ready']),
-            ('email_to', '!=', False)
-        ])
-        if not mails_to_cancel:
-            _logger.warning("XXX No outgoing emails found to cancel!")
-        if mails_to_cancel:
-            mails_to_cancel.sudo().write({'state': 'cancel'})
-            _logger.info(f"XXX Blocking email sending for messages: {mails_to_cancel.mapped('mail_message_id')}")
+
+        #  **Blokování e-mailových notifikací (mail.notification)**
+        if blocked_notifications:
+            self.env['mail.notification'].search([
+                ('mail_message_id', 'in', list(blocked_notifications)),
+                ('notification_type', '=', 'email')
+            ]).sudo().unlink()
+            _logger.info(f"XXX Removed email notifications for messages: {blocked_notifications}")
         
         return messages
