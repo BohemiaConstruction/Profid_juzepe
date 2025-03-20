@@ -35,6 +35,9 @@ class MailMessage(models.Model):
             ])
             _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, "
                 f"Message Type: {values.get('message_type', 'Neznámý')}, "
+                f"company Type: {values.get('company', 'Neznámý')}, "
+                f"internal_user Type: {values.get('internal_user', 'Neznámý')}, "
+                f"message_type Type: {values.get('message_type', 'Neznámý')}, "
                 f"Rules found: {rules}")
 
             final_email_from = None
