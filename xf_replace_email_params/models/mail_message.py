@@ -19,7 +19,8 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-        _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, Message Type: {values.get('message_type', 'Neznámý')}")
+            for values in values_list:
+                _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, Message Type: {values.get('message_type', 'Neznámý')}")
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
