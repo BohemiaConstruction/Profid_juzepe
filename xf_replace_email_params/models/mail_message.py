@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class MailMessage(models.Model):
     _inherit = 'mail.message'
+    block_email_sending = fields.Boolean(default=False, string="Block Email Sending")
 
     def get_author_user(self, author_partner_id):
         if not author_partner_id:
