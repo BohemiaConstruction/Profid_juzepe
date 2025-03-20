@@ -19,8 +19,6 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-            for values in values_list:
-                _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, Message Type: {values.get('message_type', 'Neznámý')}")
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
@@ -35,6 +33,7 @@ class MailMessage(models.Model):
                 ('only_for_internal_users', '=', internal_user),
                 ('message_type_filter', '=', message_type)
             ])
+            _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, Message Type: {values.get('message_type', 'Neznámý')}" and rules found: {values.get('rules', 'Neznámý')})
 
             final_email_from = None
             final_reply_to = None
