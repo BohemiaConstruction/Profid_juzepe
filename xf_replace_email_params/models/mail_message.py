@@ -43,7 +43,7 @@ class MailMessage(models.Model):
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
-                _logger.warning(f"Found Rule: {rule.get('id', 'Neznámý')}  {rule.get('name', 'Neznámý')}")
+                _logger.warning(f"Found Rule: {rule.id} - {rule.name}")
                 apply_rule = not rule.domain_filter
 
                 if rule.domain_filter:
