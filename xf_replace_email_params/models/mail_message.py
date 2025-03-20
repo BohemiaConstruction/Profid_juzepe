@@ -27,10 +27,18 @@ class MailMessage(models.Model):
             internal_user = user and user.has_group('base.group_user')
             message_type = values.get('message_type', '')
             subtype_id = values.get('subtype_id', False)
-            rules = self.env['mail.replace.rule'].search([
-                ('model', '=', model),
-                ('message_type_filter', '=', message_type)
-            ])
+            if message_type == 'incoming':
+                rules = self.env['mail.replace.rule'].search([
+                    ('model', '=', model),
+                    ('message_type_filter', '=', message_type)
+                ])
+            else:
+                rules = self.env['mail.replace.rule'].search([
+                    ('model', '=', model),
+                    ('company_id', '=', company.id),
+                    ('only_for_internal_users', '=', internal_user),
+                    ('message_type_filter', '=', message_type)
+                ])
             _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, "
                 f"Message Type: {values.get('message_type', 'Neznámý')}, "
                 f"company: {values.get('company', 'Neznámý')}, "
@@ -121,7 +129,6 @@ class MailMessage(models.Model):
                         final_reply_to = rule.reply_to_computed
                         reply_to_set = True
                     if rule.block_sending:
-                        _logger.info(f"XXX Blocking email notifications for message_id {values.get('id')}")
                         values['block_email_sending'] = True
 
                     if rule.min_attachment_size:
@@ -168,13 +175,13 @@ class MailNotification(models.Model):
 
             message = self.env["mail.message"].browse(message_id)
             if message.block_email_sending:
-                _logger.info(f"XXX Blocking email notification for mail_message_id {message_id}")
+                _logger.info(f"Blocking email notification for mail_message_id {message_id}")
                 continue  # Nezařadíme do seznamu vytvořených notifikací
 
             new_values_list.append(values)
 
         if not new_values_list:
-            _logger.info("XXX All email notifications were blocked.")
+            _logger.info("All email notifications were blocked.")
             return self.env["mail.notification"]
 
         return super(MailNotification, self).create(new_values_list)
