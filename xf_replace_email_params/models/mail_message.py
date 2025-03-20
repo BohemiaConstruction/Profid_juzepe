@@ -18,7 +18,6 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-        blocked_notifications = set()
 
         for values in values_list:
             author_partner_id = values.get('author_id', False)
@@ -120,7 +119,7 @@ class MailMessage(models.Model):
                         reply_to_set = True
                     if rule.block_sending:
                         _logger.info(f"XXX Blocking email notifications for message_id {values.get('id')}")
-                        blocked_notifications.add(values.get('id'))
+                        values['block_email_sending'] = True
 
                     if rule.min_attachment_size:
                         attachment_ids = []
@@ -146,14 +145,33 @@ class MailMessage(models.Model):
 
             new_values_list.append(values)
         messages = super(MailMessage, self).create(new_values_list)
-
-        #  **Blokování e-mailových notifikací (mail.notification)**
-        for message in messages:
-            if message.id in blocked_messages:
-                self.env['mail.notification'].search([
-                    ('mail_message_id', '=', message.id),
-                    ('notification_type', '=', 'email')
-                ]).sudo().unlink()
-                _logger.info(f"XXX Removed email notifications for message_id: {message.id}")
-        
         return messages
+
+class MailNotification(models.Model):
+    _inherit = "mail.notification"
+
+    @api.model_create_multi
+    def create(self, values_list):
+        new_values_list = []
+
+        for values in values_list:
+            message_id = values.get("mail_message_id")
+            notification_type = values.get("notification_type")
+
+            # Pokud není zpráva nebo jde o jiný typ než email, necháme normálně vytvořit
+            if not message_id or notification_type != "email":
+                new_values_list.append(values)
+                continue
+
+            message = self.env["mail.message"].browse(message_id)
+            if message.block_email_sending:
+                _logger.info(f"XXX Blocking email notification for mail_message_id {message_id}")
+                continue  # Nezařadíme do seznamu vytvořených notifikací
+
+            new_values_list.append(values)
+
+        if not new_values_list:
+            _logger.info("XXX All email notifications were blocked.")
+            return self.env["mail.notification"]
+
+        return super(MailNotification, self).create(new_values_list)
