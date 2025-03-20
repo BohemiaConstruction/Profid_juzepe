@@ -19,7 +19,7 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-        _logger.warning(f"nová zpráva je vytvořena {values_list}")
+        _logger.warning(f"Nová zpráva vytvořena - Model: {values.get('model', 'Neznámý')}, Message Type: {values.get('message_type', 'Neznámý')}")
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
@@ -43,7 +43,7 @@ class MailMessage(models.Model):
             for rule in rules:
                 if rule.message_type_filter and rule.message_type_filter != values.get('message_type', ''):
                     continue
-
+                _logger.warning(f"Found Rule: {rule.get('id', 'Neznámý')}  {rule.get('name', 'Neznámý')}")
                 apply_rule = not rule.domain_filter
 
                 if rule.domain_filter:
