@@ -19,7 +19,7 @@ class MailMessage(models.Model):
     @api.model_create_multi
     def create(self, values_list):
         new_values_list = []
-
+        _logger.warning(f"nová zpráva je vytvořena {values_list}")
         for values in values_list:
             author_partner_id = values.get('author_id', False)
             model = values.get('model', False)
