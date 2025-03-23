@@ -130,6 +130,7 @@ class ProductTemplate(models.Model):
             product.forecasted_with_sales = virtual_available - product.fsbnp
 
     def action_recompute_sales_metrics(self):
+        _logger.info(f"Manual recompute called for %s", self.name)
         self._compute_sales_metrics()
         self._compute_stock_metrics()
         self._compute_fastest_lead_time()
