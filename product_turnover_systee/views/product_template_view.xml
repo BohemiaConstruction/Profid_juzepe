@@ -1,29 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="view_product_template_form_inherited" model="ir.ui.view">
         <field name="name">view.product.template.form.inherited</field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//header" position="inside">
-                <button name="action_recompute_sales_metrics" type="object" string="Recompute Sales Metrics" class="btn-primary"/>
-            </xpath>
-            <xpath expr="//notebook" position="inside">
-                <page name="sale_forecast" string="Sale Forecast">
-                    <group>
-                        <field name="avg_daily_sales"/>
-                        <field name="median_daily_sales"/>
-                        <field name="median_nonzero_daily_sales"/>
-                        <field name="max_daily_sales"/>
-                        <field name="predicted_daily_sales"/>
-                        <field name="sales_period_days"/>
-                    </group>
-                    <group>
-                        <field name="fastest_lead_delay"/>
-                        <field name="fsbnp"/>
-                        <field name="forecasted_with_sales"/>
-                    </group>
-                </page>
+            <xpath expr="//sheet" position="inside">
+                <group string="Weekly Sales Metrics">
+                    <field name="avg_weekly_sales"/>
+                    <field name="median_weekly_sales"/>
+                    <field name="median_nonzero_weekly_sales"/>
+                    <field name="max_weekly_sales"/>
+                    <field name="predicted_weekly_sales"/>
+                    <field name="sales_period_days"/>
+                    <field name="fastest_lead_delay"/>
+                    <field name="fsbnp"/>
+                    <field name="forecasted_with_sales"/>
+                </group>
             </xpath>
         </field>
     </record>
