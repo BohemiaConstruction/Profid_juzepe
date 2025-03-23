@@ -71,10 +71,11 @@ class ProductTemplate(models.Model):
     @api.depends('sales_period_days')
     def _compute_stock_metrics(self):
         print(">>> _compute_stock_metrics() CALLED")
-        _logger.warning(">>> _compute_stock_metrics() CALLED from logger")
+        _logger.warning(f"Self obsahuje {len(self)} produktů")
         today = date.today()
         for product in self:
-            _logger.debug(f"[{product.name}]")
+            _logger.warning(f"Produkt: {product.name}")
+            _logger.warning(f"Varianty: {product.product_variant_ids.ids}")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
                 ('product_id', 'in', product.product_variant_ids.ids),
@@ -84,6 +85,7 @@ class ProductTemplate(models.Model):
                 ('location_dest_id.usage', '=', 'customer'),      # výdej
                 ('location_dest_id.usage', '=', 'production')     # spotřeba ve výrobě
             ]
+            _logger.warning(f"Doména stock move: {domain}")
             _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
             stock_moves = self.env['stock.move'].search(domain)
             _logger.debug(f"[%s] Found %d stock moves", product.name, len(stock_moves))
