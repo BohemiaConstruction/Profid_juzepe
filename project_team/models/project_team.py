@@ -17,13 +17,3 @@ class ProjectProject(models.Model):
     @api.onchange('team_id')
     def _get_team_members(self):
         self.update({"members_ids": [(6, 0, self.team_id.team_members_ids.ids)]})
-
-class HelpdeskTeam(models.Model):
-    _inherit = 'helpdesk.team'
-
-    project_team_id = fields.Many2one('project.team', string="Project Team", ondelete='set null')
-
-    @api.onchange('project_team_id')
-    def _onchange_project_team_id(self):
-        if self.project_team_id:
-            self.member_ids = [(6, 0, self.project_team_id.member_ids.ids)]
