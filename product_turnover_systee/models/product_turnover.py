@@ -70,24 +70,20 @@ class ProductTemplate(models.Model):
 
     @api.depends('sales_period_days')
     def _compute_stock_metrics(self):
-        print(">>> _compute_stock_metrics() CALLED")
-        _logger.warning(f"Self obsahuje {len(self)} produktů")
         today = date.today()
         for product in self:
-            _logger.warning(f"Produkt: {product.name}")
-            _logger.warning(f"Varianty: {product.product_variant_ids.ids}")
+            _logger.warning(f"▶ START: Stock metrics for {product.name}")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
-    ('product_id', 'in', product.product_variant_ids.ids),
-    ('state', '=', 'done'),
-    ('picking_id.date_done', '>=', start_date),
-    ('location_id.usage', '=', 'internal'),
-    ('location_dest_id.usage', 'in', ['customer', 'production']),
-            ]
+            ('product_id', 'in', product.product_variant_ids.ids),
+            ('state', '=', 'done'),
+            ('picking_id.date_done', '>=', start_date),
+            ('location_id.usage', '=', 'internal'),
+            ('location_dest_id.usage', 'in', ['customer', 'production']),
+        ]
             _logger.warning(f"Doména stock move: {domain}")
-            _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
             stock_moves = self.env['stock.move'].search(domain)
-            _logger.debug(f"[%s] Found %d stock moves", product.name, len(stock_moves))
+            _logger.warning(f"Nalezeno stock moves: {len(stock_moves)}")
             num_weeks = product.sales_period_days // 7
             weekly_data = {i: 0 for i in range(num_weeks)}
 
