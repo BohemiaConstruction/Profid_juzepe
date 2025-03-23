@@ -1,3 +1,4 @@
+
 from odoo import models, fields, api
 from datetime import timedelta, date
 import statistics
@@ -9,11 +10,11 @@ _logger = logging.getLogger(__name__)
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
-    avg_daily_sales = fields.Float(string="Average Daily Sales", compute="_compute_sales_metrics", store=True)
-    median_daily_sales = fields.Float(string="Median Daily Sales (All Days)", compute="_compute_sales_metrics", store=True)
-    median_nonzero_daily_sales = fields.Float(string="Median Daily Sales (Non-Zero Days)", compute="_compute_sales_metrics", store=True)
-    max_daily_sales = fields.Float(string="Max Daily Sales", compute="_compute_sales_metrics", store=True)
-    predicted_daily_sales = fields.Float(string="Predicted Daily Sales (Linear Fit)", compute="_compute_sales_metrics", store=True)
+    avg_weekly_sales = fields.Float(string="Average Weekly Sales", compute="_compute_sales_metrics", store=True)
+    median_weekly_sales = fields.Float(string="Median Weekly Sales (All Weeks)", compute="_compute_sales_metrics", store=True)
+    median_nonzero_weekly_sales = fields.Float(string="Median Weekly Sales (Non-Zero Weeks)", compute="_compute_sales_metrics", store=True)
+    max_weekly_sales = fields.Float(string="Max Weekly Sales", compute="_compute_sales_metrics", store=True)
+    predicted_weekly_sales = fields.Float(string="Predicted Weekly Sales (Linear Fit)", compute="_compute_sales_metrics", store=True)
     sales_period_days = fields.Integer(string="Sales Period History (Days)", default=90)
 
     fastest_lead_delay = fields.Float(string="Fastest Lead Time", compute="_compute_fastest_lead_time", store=True)
@@ -32,59 +33,33 @@ class ProductTemplate(models.Model):
             ]
             order_lines = self.env['sale.order.line'].search(domain)
 
-            sales_data = {start_date + timedelta(days=i): 0 for i in range(product.sales_period_days)}
-            
+            num_weeks = product.sales_period_days // 7
+            weekly_sales_data = {i: 0 for i in range(num_weeks)}
+
             for line in order_lines:
                 order_date = line.order_id.date_order.date()
-                if order_date in sales_data:
-                    sales_data[order_date] += line.product_uom_qty
-            
-            daily_sales = list(sales_data.values())
-            nonzero_sales = [qty for qty in daily_sales if qty > 0]
-            total_period_days = product.sales_period_days
-            
-            product.avg_daily_sales = sum(daily_sales) / total_period_days if total_period_days > 0 else 0
-            product.max_daily_sales = max(daily_sales) if daily_sales else 0
-            product.median_daily_sales = statistics.median(daily_sales) if daily_sales else 0
-            product.median_nonzero_daily_sales = statistics.median(nonzero_sales) if nonzero_sales else 0
-            
+                if order_date >= start_date:
+                    week_index = (order_date - start_date).days // 7
+                    if week_index in weekly_sales_data:
+                        weekly_sales_data[week_index] += line.product_uom_qty
+
+            weekly_sales = list(weekly_sales_data.values())
+            nonzero_weekly_sales = [qty for qty in weekly_sales if qty > 0]
+
+            total_weeks = len(weekly_sales)
+
+            product.avg_weekly_sales = sum(weekly_sales) / total_weeks if total_weeks > 0 else 0
+            product.max_weekly_sales = max(weekly_sales) if weekly_sales else 0
+            product.median_weekly_sales = statistics.median(weekly_sales) if weekly_sales else 0
+            product.median_nonzero_weekly_sales = statistics.median(nonzero_weekly_sales) if nonzero_weekly_sales else 0
+
             # Lineární regrese - predikce budoucího prodeje
-            x = np.arange(len(daily_sales))
-            y = np.array(daily_sales)
-            
+            x = np.arange(len(weekly_sales))
+            y = np.array(weekly_sales)
+
             if len(x) > 1 and any(y):
                 slope, intercept = np.polyfit(x, y, 1)
-                predicted_value = slope * (len(x) + 1) + intercept
-                product.predicted_daily_sales = max(0, predicted_value)
+                predicted = slope * (len(weekly_sales) + 1) + intercept
+                product.predicted_weekly_sales = max(predicted, 0)
             else:
-                product.predicted_daily_sales = 0
-
-    @api.depends('product_variant_ids.seller_ids.delay')
-    def _compute_fastest_lead_time(self):
-        for product in self:
-            lead_times = product.product_variant_ids.mapped('seller_ids.delay')
-            product.fastest_lead_delay = min(lead_times) if lead_times else 0
-
-    @api.depends('avg_daily_sales', 'fastest_lead_delay')
-    def _compute_fsbnp(self):
-        for product in self:
-            product.fsbnp = product.avg_daily_sales * product.fastest_lead_delay
-
-    @api.depends('fsbnp', 'product_variant_ids.virtual_available')
-    def _compute_forecasted_with_sales(self):
-        for product in self:
-            virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
-            product.forecasted_with_sales = virtual_available - product.fsbnp
-
-    def action_recompute_sales_metrics(self):
-        self._compute_sales_metrics()
-        self._compute_fastest_lead_time()
-        self._compute_fsbnp()
-        self._compute_forecasted_with_sales()
-
-    def _cron_recompute_sales_metrics(self):
-        products = self.search([])
-        products._compute_sales_metrics()
-        products._compute_fastest_lead_time()
-        products._compute_fsbnp()
-        products._compute_forecasted_with_sales()
+                product.predicted_weekly_sales = 0
