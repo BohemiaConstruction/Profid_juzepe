@@ -45,6 +45,7 @@
     'external_dependencies': {'python': ['numpy']},
     'data': [
         'views/product_template_view.xml',
+        'views/stock_move_graph_forecasted.xml',
         'data/ir_cron_data.xml',
     ],
     'installable': True,

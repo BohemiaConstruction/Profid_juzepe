@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_stock_move_graph_forecasted" model="ir.ui.view">
+        <field name="name">stock.move.graph.forecasted</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_move_graph"/>
+        <field name="arch" type="xml">
+            <xpath expr="//graph" position="attributes">
+                <attribute name="type">line</attribute>
+                <attribute name="sample">1</attribute>
+                <attribute name="disable_linking">1</attribute>
+            </xpath>
+            <xpath expr="//graph/field[@name='product_qty']" position="after">
+                <field name="forecasted_out_qty" type="measure"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
