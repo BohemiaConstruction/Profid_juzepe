@@ -1,4 +1,3 @@
-
 from odoo import models, fields, api
 from datetime import timedelta, date
 import statistics
@@ -45,7 +44,6 @@ class ProductTemplate(models.Model):
 
             weekly_sales = list(weekly_sales_data.values())
             nonzero_weekly_sales = [qty for qty in weekly_sales if qty > 0]
-
             total_weeks = len(weekly_sales)
 
             product.avg_weekly_sales = sum(weekly_sales) / total_weeks if total_weeks > 0 else 0
@@ -63,3 +61,34 @@ class ProductTemplate(models.Model):
                 product.predicted_weekly_sales = max(predicted, 0)
             else:
                 product.predicted_weekly_sales = 0
+
+    @api.depends('product_variant_ids.seller_ids.delay')
+    def _compute_fastest_lead_time(self):
+        for product in self:
+            lead_times = product.product_variant_ids.mapped('seller_ids.delay')
+            product.fastest_lead_delay = min(lead_times) if lead_times else 0
+
+    @api.depends('avg_weekly_sales', 'fastest_lead_delay')
+    def _compute_fsbnp(self):
+        for product in self:
+            # fastest_lead_delay je v dnech, proto přepočet na týdny
+            product.fsbnp = product.avg_weekly_sales * (product.fastest_lead_delay / 7.0)
+
+    @api.depends('fsbnp', 'product_variant_ids.virtual_available')
+    def _compute_forecasted_with_sales(self):
+        for product in self:
+            virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
+            product.forecasted_with_sales = virtual_available - product.fsbnp
+
+    def action_recompute_sales_metrics(self):
+        self._compute_sales_metrics()
+        self._compute_fastest_lead_time()
+        self._compute_fsbnp()
+        self._compute_forecasted_with_sales()
+
+    def _cron_recompute_sales_metrics(self):
+        products = self.search([])
+        products._compute_sales_metrics()
+        products._compute_fastest_lead_time()
+        products._compute_fsbnp()
+        products._compute_forecasted_with_sales()
