@@ -102,7 +102,10 @@ class ProductTemplate(models.Model):
                 else:
                     _logger.warning(f"    ⚠ No date_done on picking")
 
+            move_ids = set()
             for move in stock_moves:
+                if move.id not in move_ids:
+                    move_ids.add(move.id)
                 move_date = move.date.date()
                 if move_date >= start_date:
                     week_index = (move_date - start_date).days // 7
@@ -110,6 +113,7 @@ class ProductTemplate(models.Model):
                         weekly_data[week_index] += move.product_uom_qty
 
             weekly_vals = list(weekly_data.values())
+            _logger.warning(f"    → Week Index: {weekly_vals}")
             nonzero_vals = [v for v in weekly_vals if v > 0]
             total_weeks = len(weekly_vals)
 
