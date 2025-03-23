@@ -34,6 +34,11 @@
                         <field name="max_weekly_stock_out"/>
                         <field name="predicted_weekly_stock_out"/>
                     </group>
+                    <group>
+                        <field name="fastest_lead_delay"/>
+                        <field name="fsbnpstock"/>
+                        <field name="forecasted_with_stock"/>
+                    </group>
                 </page>
             </xpath>
         </field>

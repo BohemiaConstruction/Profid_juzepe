@@ -19,6 +19,8 @@ class ProductTemplate(models.Model):
     fastest_lead_delay = fields.Float(string="Fastest Lead Time", compute="_compute_fastest_lead_time", store=True)
     fsbnp = fields.Float(string="Forecasted Sales before next Purchase", compute="_compute_fsbnp", store=True)
     forecasted_with_sales = fields.Float(string="Forecasted with Sales", compute="_compute_forecasted_with_sales", store=True)
+    fsbnpstock = fields.Float(string="Forecasted Stock before next Purchase", compute="_compute_fsbnpstock", store=True)
+    forecasted_with_stock = fields.Float(string="Forecasted with Stock", compute="_compute_forecasted_with_stock", store=True)
 
     avg_weekly_stock_out = fields.Float(string="Avg Weekly Stock OUT", compute="_compute_stock_metrics", store=True)
     median_weekly_stock_out = fields.Float(string="Median Weekly Stock OUT", compute="_compute_stock_metrics", store=True)
@@ -128,11 +130,22 @@ class ProductTemplate(models.Model):
         for product in self:
             product.fsbnp = product.avg_weekly_sales * (product.fastest_lead_delay / 7.0)
 
+    @api.depends('avg_weekly_stock', 'fastest_lead_delay')
+    def _compute_fsbnp(self):
+        for product in self:
+            product.fsbnpstock = product.avg_weekly_stock * (product.fastest_lead_delay / 7.0)
+
     @api.depends('fsbnp', 'product_variant_ids.virtual_available')
     def _compute_forecasted_with_sales(self):
         for product in self:
             virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
             product.forecasted_with_sales = virtual_available - product.fsbnp
+
+    @api.depends('fsbnp', 'product_variant_ids.virtual_available')
+    def _compute_forecasted_with_stock(self):
+        for product in self:
+            virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
+            product.forecasted_with_stock = virtual_available - product.fsbnpstock
 
     def action_recompute_sales_metrics(self):
         _logger.info(f"Manual recompute called for %s", self.name)
@@ -142,6 +155,8 @@ class ProductTemplate(models.Model):
             product._compute_fastest_lead_time()
             product._compute_fsbnp()
             product._compute_forecasted_with_sales()
+            products._compute_fsbnpstock()
+            products._compute_forecasted_with_stock()
 
     def _cron_recompute_sales_metrics(self):
         products = self.search([])
@@ -150,6 +165,8 @@ class ProductTemplate(models.Model):
         products._compute_fastest_lead_time()
         products._compute_fsbnp()
         products._compute_forecasted_with_sales()
+        products._compute_fsbnpstock()
+        products._compute_forecasted_with_stock()
 
 class ProductProduct(models.Model):
     _inherit = "product.product"
