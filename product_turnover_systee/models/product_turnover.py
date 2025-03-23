@@ -132,11 +132,12 @@ class ProductTemplate(models.Model):
 
     def action_recompute_sales_metrics(self):
         _logger.info(f"Manual recompute called for %s", self.name)
-        self._compute_sales_metrics()
-        self._compute_stock_metrics()
-        self._compute_fastest_lead_time()
-        self._compute_fsbnp()
-        self._compute_forecasted_with_sales()
+        for product in self:
+            product._compute_sales_metrics()
+            product._compute_stock_metrics()
+            product._compute_fastest_lead_time()
+            product._compute_fsbnp()
+            product._compute_forecasted_with_sales()
 
     def _cron_recompute_sales_metrics(self):
         products = self.search([])
