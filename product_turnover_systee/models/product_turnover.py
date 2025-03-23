@@ -78,11 +78,11 @@ class ProductTemplate(models.Model):
             _logger.warning(f"Varianty: {product.product_variant_ids.ids}")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
-                ('product_id', 'in', product.product_variant_ids.ids),
-                ('state', '=', 'done'),
-                ('date', '>=', start_date),
-                ('location_id.usage', '=', 'internal'),
-                ('location_dest_id.usage', 'in', ['customer', 'production'])
+    ('product_id', 'in', product.product_variant_ids.ids),
+    ('state', '=', 'done'),
+    ('picking_id.date_done', '>=', start_date),
+    ('location_id.usage', '=', 'internal'),
+    ('location_dest_id.usage', 'in', ['customer', 'production']),
             ]
             _logger.warning(f"Doména stock move: {domain}")
             _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
