@@ -10,14 +10,12 @@
     'version': '17.0.1.0.0',
     'license': 'AGPL-3',
     'depends': [
-        'helpdesk',
         'project',
         'crm',
     ],
     'data': [
-        'views/helpdesk_team_views.xml',
-        'views/project_team_views.xml',
         'views/project_team_view.xml',
+        'views/helpdesk_team_view.xml',
     ],
     'images': [
         'static/description/ProjectTeam.png',

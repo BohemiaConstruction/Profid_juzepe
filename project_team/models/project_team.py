@@ -1,32 +1,29 @@
+# See LICENSE file for full copyright and licensing details.
 
-from odoo import models, fields, api
+from odoo import api, fields, models
 
-class CrmTeam(models.Model):
-    _inherit = 'crm.team'
 
-    type_team = fields.Selection([
-        ('project', 'Project'),
-        ('sale', 'Sales'),
-        ('support', 'Support'),
-    ], string='Team Type')
+class ProjectProject(models.Model):
+    _inherit = 'project.project'
 
-    helpdesk_team_id = fields.Many2one('helpdesk.team', string="Helpdesk Team", ondelete='set null')
+    members_ids = fields.Many2many('res.users', 'project_user_rel', 'project_id',
+                                   'user_id', 'Project Members', help="""Project's
+                               members are users who can have an access to
+                               the tasks related to this project."""
+                                   )
+    team_id = fields.Many2one('crm.team', "Project Team",
+                              domain=[('type_team', '=', 'project')])
 
-    @api.onchange('helpdesk_team_id')
-    def _onchange_helpdesk_team_id(self):
-        if self.helpdesk_team_id:
-            self.team_members_ids = [(6, 0, self.helpdesk_team_id.member_ids.ids)]
+    @api.onchange('team_id')
+    def _get_team_members(self):
+        self.update({"members_ids": [(6, 0, self.team_id.team_members_ids.ids)]})
 
-    def write(self, vals):
-        res = super().write(vals)
-        if 'helpdesk_team_id' in vals and vals['helpdesk_team_id']:
-            for team in self:
-                team.team_members_ids = [(6, 0, team.helpdesk_team_id.member_ids.ids)]
-        return res
+class HelpdeskTeam(models.Model):
+    _inherit = 'helpdesk.team'
 
-    @api.model
-    def create(self, vals):
-        team = super().create(vals)
-        if vals.get('helpdesk_team_id'):
-            team.team_members_ids = [(6, 0, team.helpdesk_team_id.member_ids.ids)]
-        return team
+    project_team_id = fields.Many2one('project.team', string="Project Team", ondelete='set null')
+
+    @api.onchange('project_team_id')
+    def _onchange_project_team_id(self):
+        if self.project_team_id:
+            self.member_ids = [(6, 0, self.project_team_id.member_ids.ids)]
