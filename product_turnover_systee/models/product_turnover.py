@@ -131,7 +131,7 @@ class ProductTemplate(models.Model):
             product.fsbnp = product.avg_weekly_sales * (product.fastest_lead_delay / 7.0)
 
     @api.depends('avg_weekly_stock_out', 'fastest_lead_delay')
-    def _compute_fsbnp(self):
+    def _compute_fsbnpstock(self):
         for product in self:
             product.fsbnpstock = product.avg_weekly_stock * (product.fastest_lead_delay / 7.0)
 
