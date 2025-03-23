@@ -162,6 +162,6 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     forecasted_out_qty = fields.Float(string="Forecasted OUT Qty")
-    moves = self.env['stock.move'].search([('product_id', '=', product_id)], limit=1, order='date desc')
-    for move in moves:
-        forecastmove.forecasted_out_qty = product_tmpl.predicted_weekly_stock_out
+    def action_fill_forecasted_out(self):
+        for move in self:
+            move.forecasted_out_qty = move.product_id.product_tmpl_id.predicted_weekly_stock_out
