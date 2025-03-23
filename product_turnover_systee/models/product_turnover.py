@@ -133,7 +133,7 @@ class ProductTemplate(models.Model):
     @api.depends('avg_weekly_stock_out', 'fastest_lead_delay')
     def _compute_fsbnpstock(self):
         for product in self:
-            product.fsbnpstock = product.avg_weekly_stock * (product.fastest_lead_delay / 7.0)
+            product.fsbnpstock = product.avg_weekly_stock_out * (product.fastest_lead_delay / 7.0)
 
     @api.depends('fsbnp', 'product_variant_ids.virtual_available')
     def _compute_forecasted_with_sales(self):
@@ -141,7 +141,7 @@ class ProductTemplate(models.Model):
             virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
             product.forecasted_with_sales = virtual_available - product.fsbnp
 
-    @api.depends('fsbnp', 'product_variant_ids.virtual_available')
+    @api.depends('fsbnpstock', 'product_variant_ids.virtual_available')
     def _compute_forecasted_with_stock(self):
         for product in self:
             virtual_available = sum(product.product_variant_ids.mapped('virtual_available'))
