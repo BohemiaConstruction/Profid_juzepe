@@ -4,6 +4,12 @@ from odoo import models, fields, api
 class CrmTeam(models.Model):
     _inherit = 'crm.team'
 
+    type_team = fields.Selection([
+        ('project', 'Project'),
+        ('sale', 'Sales'),
+        ('support', 'Support'),
+    ], string='Team Type')
+
     helpdesk_team_id = fields.Many2one('helpdesk.team', string="Helpdesk Team", ondelete='set null')
 
     @api.onchange('helpdesk_team_id')
