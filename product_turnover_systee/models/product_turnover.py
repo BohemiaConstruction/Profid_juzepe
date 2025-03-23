@@ -80,7 +80,7 @@ class ProductTemplate(models.Model):
             domain = [
                 ('product_id', 'in', product.product_variant_ids.ids),
                 ('state', '=', 'done'),
-                ('date_done', '>=', start_date),
+                ('date', '>=', start_date),
                 ('location_id.usage', '=', 'internal'),
                 ('location_dest_id.usage', 'in', ['customer', 'production'])
             ]
