@@ -80,7 +80,6 @@ class ProductTemplate(models.Model):
             domain = [
     ('product_id', 'in', product.product_variant_ids.ids),
     ('state', '=', 'done'),
-    ('date', '>=', start_date),
             ]
             _logger.warning(f"Doména stock move: {domain}")
             _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
