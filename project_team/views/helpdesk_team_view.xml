@@ -3,7 +3,7 @@
     <field name="model">helpdesk.team</field>
     <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
     <field name="arch" type="xml">
-        <xpath expr="//field[@name='name']" position="after">
+        <xpath expr="//field[@name='active']" position="before">
             <field name="project_team_id"/>
         </xpath>
     </field>
