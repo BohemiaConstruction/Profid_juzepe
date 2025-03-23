@@ -85,7 +85,7 @@ class ProductTemplate(models.Model):
             stock_moves = self.env['stock.move'].search(domain)
             _logger.warning(f"Nalezeno stock moves: {len(stock_moves)}")
             num_weeks = product.sales_period_days // 7
-            weekly_data = {i: 0 for i in range(num_weeks)}
+            weekly_data = {i: 0 for i in range(num_weeks + 1)}
             for move in stock_moves:
                 _logger.warning(f"  → MOVE: {move.name}, QTY: {move.product_uom_qty}")
                 if move.picking_id.date_done:
