@@ -86,22 +86,6 @@ class ProductTemplate(models.Model):
             _logger.warning(f"Nalezeno stock moves: {len(stock_moves)}")
             num_weeks = product.sales_period_days // 7
             weekly_data = {i: 0 for i in range(num_weeks + 1)}
-            for move in stock_moves:
-                _logger.warning(f"  → MOVE: {move.name}, QTY: {move.product_uom_qty}")
-                if move.picking_id.date_done:
-                    move_date = move.picking_id.date_done.date()
-                    _logger.warning(f"    Date Done: {move_date}")
-                    if move_date >= start_date:
-                        week_index = (move_date - start_date).days // 7
-                        _logger.warning(f"    → Week Index: {week_index}")
-                        if week_index in weekly_data:
-                            weekly_data[week_index] += move.product_uom_qty
-                            _logger.warning(f"    ✅ Added {move.product_uom_qty} to week {week_index}")
-                        else:
-                            _logger.warning(f"    ⚠ Week index {week_index} out of range")
-                else:
-                    _logger.warning(f"    ⚠ No date_done on picking")
-
             move_ids = set()
             for move in stock_moves:
                 if move.id in move_ids:
