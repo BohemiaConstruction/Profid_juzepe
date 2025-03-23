@@ -1,10 +1,12 @@
-<record id="view_helpdesk_team_form_inherit" model="ir.ui.view">
-    <field name="name">helpdesk.team.form.inherit.project</field>
-    <field name="model">helpdesk.team</field>
-    <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='active']" position="before">
-            <field name="project_team_id"/>
-        </xpath>
-    </field>
-</record>
+<odoo>
+    <record id="view_helpdesk_team_form_inherit_project_team" model="ir.ui.view">
+        <field name="name">helpdesk.team.form.inherit.project.team</field>
+        <field name="model">helpdesk.team</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="inside">
+                <field name="project_team_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

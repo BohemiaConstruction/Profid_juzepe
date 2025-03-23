@@ -15,6 +15,7 @@
     ],
     'data': [
         'views/project_team_view.xml',
+        'views/helpdesk_team_view.xml',
     ],
     'images': [
         'static/description/ProjectTeam.png',
