@@ -79,8 +79,9 @@ class ProductTemplate(models.Model):
                 ('location_dest_id.usage', '=', 'customer'),      # výdej
                 ('location_dest_id.usage', '=', 'production')     # spotřeba ve výrobě
             ]
+            _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
             stock_moves = self.env['stock.move'].search(domain)
-
+            _logger.debug(f"[%s] Found %d stock moves", product.name, len(stock_moves))
             num_weeks = product.sales_period_days // 7
             weekly_data = {i: 0 for i in range(num_weeks)}
 
@@ -140,3 +141,10 @@ class ProductTemplate(models.Model):
         products._compute_fastest_lead_time()
         products._compute_fsbnp()
         products._compute_forecasted_with_sales()
+
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    def action_recompute_sales_metrics(self):
+        for template in self.mapped('product_tmpl_id'):
+            template.action_recompute_sales_metrics()
