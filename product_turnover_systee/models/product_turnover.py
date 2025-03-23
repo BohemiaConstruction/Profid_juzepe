@@ -99,7 +99,7 @@ class ProductTemplate(models.Model):
                             _logger.warning(f"    ✅ Added {move.product_uom_qty} to week {week_index}")
                         else:
                             _logger.warning(f"    ⚠ Week index {week_index} out of range")
-    else:
+                else:
                     _logger.warning(f"    ⚠ No date_done on picking")
 
             for move in stock_moves:
