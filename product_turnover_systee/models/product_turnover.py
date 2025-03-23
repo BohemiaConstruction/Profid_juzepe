@@ -104,8 +104,10 @@ class ProductTemplate(models.Model):
 
             move_ids = set()
             for move in stock_moves:
-                if move.id not in move_ids:
-                    move_ids.add(move.id)
+                if move.id in move_ids:
+                    _logger.debug(f"⏩ Skipping duplicate move ID: {move.id}")
+                    continue
+                move_ids.add(move.id)
                 move_date = move.date.date()
                 if move_date >= start_date:
                     week_index = (move_date - start_date).days // 7
