@@ -35,7 +35,9 @@ class ProductTemplate(models.Model):
                 ('order_id.state', 'in', ['sale', 'done']),
                 ('product_id', 'in', product.product_variant_ids.ids)
             ]
+            _logger.debug(f"[%s] Searching order moves: domain=%s", product.name, domain)
             order_lines = self.env['sale.order.line'].search(domain)
+            _logger.debug(f"[%s] Found %d orders", product.name, len(order_lines))
 
             num_weeks = product.sales_period_days // 7
             weekly_sales_data = {i: 0 for i in range(num_weeks)}
