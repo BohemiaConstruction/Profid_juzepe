@@ -70,6 +70,8 @@ class ProductTemplate(models.Model):
 
     @api.depends('sales_period_days')
     def _compute_stock_metrics(self):
+        print(">>> _compute_stock_metrics() CALLED")
+        _logger.warning(">>> _compute_stock_metrics() CALLED from logger")
         today = date.today()
         for product in self:
             _logger.debug(f"[{product.name}]")
