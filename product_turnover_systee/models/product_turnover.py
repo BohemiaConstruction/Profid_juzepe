@@ -20,6 +20,11 @@ class ProductTemplate(models.Model):
     fsbnp = fields.Float(string="Forecasted Sales before next Purchase", compute="_compute_fsbnp", store=True)
     forecasted_with_sales = fields.Float(string="Forecasted with Sales", compute="_compute_forecasted_with_sales", store=True)
 
+    avg_weekly_stock_out = fields.Float(string="Avg Weekly Stock OUT", compute="_compute_stock_metrics", store=True)
+    median_weekly_stock_out = fields.Float(string="Median Weekly Stock OUT", compute="_compute_stock_metrics", store=True)
+    max_weekly_stock_out = fields.Float(string="Max Weekly Stock OUT", compute="_compute_stock_metrics", store=True)
+    predicted_weekly_stock_out = fields.Float(string="Predicted Weekly Stock OUT (Linear)", compute="_compute_stock_metrics", store=True)
+
     @api.depends('sales_period_days')
     def _compute_sales_metrics(self):
         today = date.today()
@@ -51,7 +56,6 @@ class ProductTemplate(models.Model):
             product.median_weekly_sales = statistics.median(weekly_sales) if weekly_sales else 0
             product.median_nonzero_weekly_sales = statistics.median(nonzero_weekly_sales) if nonzero_weekly_sales else 0
 
-            # Lineární regrese - predikce budoucího prodeje
             x = np.arange(len(weekly_sales))
             y = np.array(weekly_sales)
 
@@ -62,6 +66,49 @@ class ProductTemplate(models.Model):
             else:
                 product.predicted_weekly_sales = 0
 
+    @api.depends('sales_period_days')
+    def _compute_stock_metrics(self):
+        today = date.today()
+        for product in self:
+            start_date = today - timedelta(days=product.sales_period_days)
+            domain = [
+                ('product_id', 'in', product.product_variant_ids.ids),
+                ('state', '=', 'done'),
+                ('date', '>=', start_date),
+                '|',
+                ('location_dest_id.usage', '=', 'customer'),      # výdej
+                ('location_dest_id.usage', '=', 'production')     # spotřeba ve výrobě
+            ]
+            stock_moves = self.env['stock.move'].search(domain)
+
+            num_weeks = product.sales_period_days // 7
+            weekly_data = {i: 0 for i in range(num_weeks)}
+
+            for move in stock_moves:
+                move_date = move.date.date()
+                if move_date >= start_date:
+                    week_index = (move_date - start_date).days // 7
+                    if week_index in weekly_data:
+                        weekly_data[week_index] += move.product_uom_qty
+
+            weekly_vals = list(weekly_data.values())
+            nonzero_vals = [v for v in weekly_vals if v > 0]
+            total_weeks = len(weekly_vals)
+
+            product.avg_weekly_stock_out = sum(weekly_vals) / total_weeks if total_weeks > 0 else 0
+            product.max_weekly_stock_out = max(weekly_vals) if weekly_vals else 0
+            product.median_weekly_stock_out = statistics.median(weekly_vals) if weekly_vals else 0
+
+            x = np.arange(len(weekly_vals))
+            y = np.array(weekly_vals)
+
+            if len(x) > 1 and any(y):
+                slope, intercept = np.polyfit(x, y, 1)
+                predicted = slope * (len(weekly_vals) + 1) + intercept
+                product.predicted_weekly_stock_out = max(predicted, 0)
+            else:
+                product.predicted_weekly_stock_out = 0
+
     @api.depends('product_variant_ids.seller_ids.delay')
     def _compute_fastest_lead_time(self):
         for product in self:
@@ -71,7 +118,6 @@ class ProductTemplate(models.Model):
     @api.depends('avg_weekly_sales', 'fastest_lead_delay')
     def _compute_fsbnp(self):
         for product in self:
-            # fastest_lead_delay je v dnech, proto přepočet na týdny
             product.fsbnp = product.avg_weekly_sales * (product.fastest_lead_delay / 7.0)
 
     @api.depends('fsbnp', 'product_variant_ids.virtual_available')
@@ -82,6 +128,7 @@ class ProductTemplate(models.Model):
 
     def action_recompute_sales_metrics(self):
         self._compute_sales_metrics()
+        self._compute_stock_metrics()
         self._compute_fastest_lead_time()
         self._compute_fsbnp()
         self._compute_forecasted_with_sales()
@@ -89,6 +136,7 @@ class ProductTemplate(models.Model):
     def _cron_recompute_sales_metrics(self):
         products = self.search([])
         products._compute_sales_metrics()
+        products._compute_stock_metrics()
         products._compute_fastest_lead_time()
         products._compute_fsbnp()
         products._compute_forecasted_with_sales()
