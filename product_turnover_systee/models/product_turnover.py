@@ -108,7 +108,7 @@ class ProductTemplate(models.Model):
                     _logger.debug(f"⏩ Skipping duplicate move ID: {move.id}")
                     continue
                 move_ids.add(move.id)
-                move_date = move.date.date()
+                move_date = move.picking_id.date_done.date()
                 if move_date >= start_date:
                     week_index = (move_date - start_date).days // 7
                     if week_index in weekly_data:
