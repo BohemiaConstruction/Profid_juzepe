@@ -72,6 +72,7 @@ class ProductTemplate(models.Model):
     def _compute_stock_metrics(self):
         today = date.today()
         for product in self:
+            _logger.debug(f"[{product.name}]")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
                 ('product_id', 'in', product.product_variant_ids.ids),
