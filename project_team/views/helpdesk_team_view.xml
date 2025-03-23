@@ -5,6 +5,7 @@
         <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='description']" position="after">
+                <label for="project_team_id"/>
                 <field name="project_team_id"/>
             </xpath>
         </field>
