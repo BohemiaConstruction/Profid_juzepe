@@ -12,6 +12,8 @@
     'depends': [
         'project',
         'crm',
+        'helpdesk',
+        'contacts',
     ],
     'data': [
         'views/project_team_view.xml',
