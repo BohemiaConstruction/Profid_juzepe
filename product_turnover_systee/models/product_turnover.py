@@ -81,9 +81,8 @@ class ProductTemplate(models.Model):
                 ('product_id', 'in', product.product_variant_ids.ids),
                 ('state', '=', 'done'),
                 ('date', '>=', start_date),
-                '|',
-                ('location_dest_id.usage', '=', 'customer'),      # výdej
-                ('location_dest_id.usage', '=', 'production')     # spotřeba ve výrobě
+                ('location_id.usage', '=', 'internal'),
+                ('location_dest_id.usage', 'in', ['customer', 'production'])
             ]
             _logger.warning(f"Doména stock move: {domain}")
             _logger.debug(f"[%s] Searching stock moves: domain=%s", product.name, domain)
