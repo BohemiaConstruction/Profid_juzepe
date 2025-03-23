@@ -157,11 +157,3 @@ class ProductProduct(models.Model):
     def action_recompute_sales_metrics(self):
         for template in self.mapped('product_tmpl_id'):
             template.action_recompute_sales_metrics()
-
-class StockMove(models.Model):
-    _inherit = "stock.move"
-
-    forecasted_out_qty = fields.Float(string="Forecasted OUT Qty")
-    def action_fill_forecasted_out(self):
-        for move in self:
-            move.forecasted_out_qty = move.product_id.product_tmpl_id.predicted_weekly_stock_out
