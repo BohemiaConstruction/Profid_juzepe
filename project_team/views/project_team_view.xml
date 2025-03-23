@@ -13,7 +13,6 @@
                         <label for="name" class="oe_edit_only" string="Project Team"/>
                         <h1>
                             <field name="name"/>
-                            <field name="helpdesk_team_id"/>
                         </h1>
                         <div name="options_active"/>
                     </div>
