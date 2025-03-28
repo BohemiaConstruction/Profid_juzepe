@@ -77,12 +77,14 @@ class ProductTemplate(models.Model):
             _logger.warning(f"▶ START: Stock metrics for {product.name}")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
-            ('product_id', 'in', product.product_variant_ids.ids),
-            ('state', '=', 'done'),
-            ('picking_id.date_done', '>=', start_date),
-            ('location_id.usage', '=', 'internal'),
-            ('location_dest_id.usage', 'in', ['customer', 'production']),
-        ]
+    ('product_id', 'in', product.product_variant_ids.ids),
+    ('state', '=', 'done'),
+    ('location_id.usage', '=', 'internal'),
+    ('location_dest_id.usage', 'in', ['customer', 'production']),
+    '|',
+    ('picking_id.date_done', '>=', start_date),
+    ('date', '>=', start_date),
+            ]
             _logger.warning(f"Doména stock move: {domain}")
             stock_moves = self.env['stock.move'].search(domain)
             _logger.warning(f"Nalezeno stock moves: {len(stock_moves)}")
