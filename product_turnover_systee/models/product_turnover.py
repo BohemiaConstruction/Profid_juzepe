@@ -74,7 +74,7 @@ class ProductTemplate(models.Model):
     def _compute_stock_metrics(self):
         today = date.today()
         for product in self:
-            _logger.warning(f"▶ START: Stock metrics for {product.name}")
+            _logger.info(f"▶ START: Stock metrics for {product.name}")
             start_date = today - timedelta(days=product.sales_period_days)
             domain = [
     ('product_id', 'in', product.product_variant_ids.ids),
@@ -85,9 +85,9 @@ class ProductTemplate(models.Model):
     ('picking_id.date_done', '>=', start_date),
     ('date', '>=', start_date),
             ]
-            _logger.warning(f"Doména stock move: {domain}")
+            _logger.info(f"Doména stock move: {domain}")
             stock_moves = self.env['stock.move'].search(domain)
-            _logger.warning(f"Nalezeno stock moves: {len(stock_moves)}")
+            _logger.info(f"Nalezeno stock moves: {len(stock_moves)}")
             num_weeks = product.sales_period_days // 7
             weekly_data = {i: 0 for i in range(num_weeks + 1)}
             move_ids = set()
@@ -103,7 +103,7 @@ class ProductTemplate(models.Model):
                         weekly_data[week_index] += move.product_uom_qty
 
             weekly_vals = list(weekly_data.values())
-            _logger.warning(f"    → Week Index: {weekly_vals}")
+            _logger.info(f"    → Week Index: {weekly_vals}")
             nonzero_vals = [v for v in weekly_vals if v > 0]
             total_weeks = len(weekly_vals)
 
