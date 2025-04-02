@@ -157,8 +157,8 @@ class ProductTemplate(models.Model):
             product._compute_fastest_lead_time()
             product._compute_fsbnp()
             product._compute_forecasted_with_sales()
-            products._compute_fsbnpstock()
-            products._compute_forecasted_with_stock()
+            product._compute_fsbnpstock()
+            product._compute_forecasted_with_stock()
 
     def _cron_recompute_sales_metrics(self):
         products = self.search([])
